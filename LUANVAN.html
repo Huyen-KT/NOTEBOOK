@@ -37,6 +37,7 @@
   --edit:#b49bff;--edit-soft:#251d39;--hl:rgba(255,200,0,.32);
   --shadow:0 1px 2px rgba(0,0,0,.4);color-scheme:dark;}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{margin:0}
 body{background:var(--bg);color:var(--text);font:14px/1.55 "Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
 a{color:var(--primary)}
@@ -173,6 +174,8 @@ td.c:hover .vbtn,.vbtn.on{opacity:1}.vbtn.on{color:var(--ok)}
 .form label{display:flex;flex-direction:column;gap:5px;font-weight:500}
 .form label small{font-weight:400;color:var(--muted)}
 .opt{display:flex;gap:8px;align-items:flex-start;padding:6px 0;cursor:pointer}
+.form label.opt{flex-direction:row;font-weight:400}
+.opt input{margin-top:4px;flex:none}
 /* auth */
 .auth{min-height:100vh;display:grid;place-items:center;padding:16px}
 .auth-card{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:14px}
@@ -271,7 +274,11 @@ const store = {
   get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch{return d}},
   set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
 };
-const S = Object.assign({mode:'rule',crossref:true,geminiKey:'',model:CONFIG.DEFAULT_MODEL,delaySec:12,supabaseUrl:'',supabaseKey:''},store.get('lr.settings',{}));
+const S = Object.assign({mode:'rule',crossref:true,provider:'gemini',geminiKey:'',model:CONFIG.DEFAULT_MODEL,openaiKey:'',openaiModel:'gpt-4.1-mini',delaySec:12,supabaseUrl:'',supabaseKey:''},store.get('lr.settings',{}));
+const PROVIDER_NAME={gemini:'Google Gemini',openai:'OpenAI (GPT)'};
+const aiKey=()=>S.provider==='openai'?S.openaiKey:S.geminiKey;
+const aiModel=()=>S.provider==='openai'?S.openaiModel:S.model;
+const aiLabel=()=>`${PROVIDER_NAME[S.provider]||'AI'} · ${aiModel()}`;
 const saveSettings = ()=>store.set('lr.settings',S);
 const isNA = v=>!v||/^(không được đề cập|not mentioned|not reported|n\/?a)\.?$/i.test(String(v).trim());
 function toast(msg,type=''){const t=document.createElement('div');t.className='toast '+type;t.textContent=msg;$('#toasts').append(t);setTimeout(()=>t.remove(),type==='error'?7000:3500)}
@@ -457,6 +464,79 @@ function pickModel(ms){
   const stable=ms.filter(m=>/flash/i.test(m)&&!bad.test(m)).sort((a,b)=>ver(b)-ver(a)||a.length-b.length);
   return ms.find(m=>m==='gemini-flash-latest')||stable[0]||ms.find(m=>/flash/i.test(m)&&!/lite/i.test(m))||ms.find(m=>/flash/i.test(m))||ms[0]||null;
 }
+// ---------- Chọn nhà cung cấp AI ----------
+async function callAI({system,pdfB64=null,filename='paper.pdf',text='',prompt='',schema=null}){
+  if(S.provider==='openai'){
+    const content=[];
+    if(pdfB64) content.push({type:'file',file:{filename:String(filename||'paper.pdf').replace(/[^\w.\- ]/g,'_').slice(-120)||'paper.pdf',file_data:'data:application/pdf;base64,'+pdfB64}});
+    if(text) content.push({type:'text',text});
+    if(prompt) content.push({type:'text',text:prompt});
+    return callOpenAI({system,content,schema});
+  }
+  const parts=[];
+  if(pdfB64) parts.push({inlineData:{mimeType:'application/pdf',data:pdfB64}});
+  if(text) parts.push({text});
+  if(prompt) parts.push({text:prompt});
+  return callGemini({system,parts,schema});
+}
+// Chuyển schema dạng Gemini (OBJECT/STRING) sang JSON Schema chuẩn (strict) cho OpenAI
+function toJsonSchema(g){
+  const t=String(g.type||'string').toLowerCase();
+  if(t==='object'){const props={};for(const [k,v] of Object.entries(g.properties||{})) props[k]=toJsonSchema(v);
+    return {type:'object',...(g.description?{description:g.description}:{}),properties:props,required:Object.keys(props),additionalProperties:false}}
+  if(t==='array') return {type:'array',items:toJsonSchema(g.items||{type:'STRING'})};
+  return {type:t,...(g.description?{description:g.description}:{})};
+}
+async function listOpenAIModels(key){
+  const r=await fetch('https://api.openai.com/v1/models',{headers:{Authorization:'Bearer '+key}});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(d.error?.message||r.statusText);
+  return (d.data||[]).map(m=>m.id).filter(id=>/^(gpt-|o\d)/.test(id)&&!/audio|realtime|tts|transcribe|search|image|instruct|codex|embedding|moderation|dall|whisper|chat-latest|preview|computer|oss/i.test(id));
+}
+function pickOpenAIModel(ids){
+  const ver=id=>parseFloat((id.match(/^gpt-(\d+(?:\.\d+)?)/)||[])[1]||0);
+  const plain=ids.filter(id=>/^gpt-\d/.test(id)&&!/\d{4}-\d{2}-\d{2}/.test(id));
+  const mini=plain.filter(id=>/-mini$/.test(id)).sort((a,b)=>ver(b)-ver(a));
+  return mini[0]||plain.sort((a,b)=>ver(b)-ver(a))[0]||ids[0]||null;
+}
+async function callOpenAI({system,content,schema}){
+  if(!S.openaiKey) throw new AppErr('Chưa nhập OpenAI API key (vào Cài đặt).',{pause:true});
+  let switched=false;
+  for(let attempt=0;attempt<5;attempt++){
+    const body={model:S.openaiModel,messages:[{role:'system',content:system},{role:'user',content}],
+      ...(schema?{response_format:{type:'json_schema',json_schema:{name:'extraction',strict:true,schema:toJsonSchema(schema)}}}:{})};
+    let res;
+    try{res=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+S.openaiKey},body:JSON.stringify(body)})}
+    catch(e){if(attempt<4){await sleep(5000*(attempt+1));continue}throw new AppErr('Lỗi mạng khi gọi OpenAI: '+e.message,{retry:true})}
+    if(res.ok){
+      const data=await res.json();const ch=data.choices?.[0];
+      if(!ch) throw new AppErr('OpenAI không trả kết quả.');
+      if(ch.message?.refusal) throw new AppErr('OpenAI từ chối xử lý: '+ch.message.refusal);
+      if(ch.finish_reason==='length') throw new AppErr('Kết quả bị cắt do quá dài.',{retry:true});
+      const text=ch.message?.content||'';
+      if(!schema) return text;
+      try{return JSON.parse(text)}catch{const m=text.match(/\{[\s\S]*\}/);try{if(m)return JSON.parse(m[0])}catch{}throw new AppErr('OpenAI trả về JSON không hợp lệ.',{retry:true})}
+    }
+    const err=await res.json().catch(()=>({}));const msg=err.error?.message||res.statusText,code=err.error?.code||'';
+    if(res.status===401) throw new AppErr('OpenAI API key không hợp lệ: '+msg,{pause:true});
+    if(res.status===429){
+      if(/insufficient_quota|billing|quota/i.test(code+msg)) throw new AppErr('Tài khoản OpenAI đã hết credit / chưa nạp tiền (insufficient quota). Nạp thêm tại platform.openai.com → Billing rồi bấm Tiếp tục.',{pause:true});
+      const ra=parseFloat(res.headers.get('retry-after')||'');const wait=(isFinite(ra)?ra*1000:15000*(attempt+1))+1000;
+      Q.note=`Giới hạn tốc độ của OpenAI — chờ ${Math.round(wait/1000)} giây…`;renderQueueBox();await sleep(wait);Q.note='';renderQueueBox();continue;
+    }
+    if(res.status>=500){await sleep(10000*(attempt+1));continue}
+    if((res.status===404||code==='model_not_found'||/model.*(does not exist|not found|do not have access)/i.test(msg))&&!switched){
+      switched=true;
+      try{const pick=pickOpenAIModel(await listOpenAIModels(S.openaiKey));
+        if(pick&&pick!==S.openaiModel){const old=S.openaiModel;S.openaiModel=pick;saveSettings();toast(`Model “${old}” không dùng được — đã tự chuyển sang “${pick}”.`,'ok');attempt--;continue}}catch(e){console.warn(e)}
+      throw new AppErr(`Không dùng được model "${S.openaiModel}". Vào Cài đặt → bấm "Kiểm tra key" để chọn model khác.`,{pause:true});
+    }
+    if(res.status===400&&/file|pdf/i.test(msg)) throw new AppErr(`Model "${S.openaiModel}" không đọc được file PDF: ${msg}. Hãy chọn model khác (vd. dòng gpt-4.1 / gpt-4o / gpt-5).`,{pause:true});
+    throw new AppErr(`OpenAI lỗi ${res.status}: ${msg}`);
+  }
+  throw new AppErr('OpenAI đang quá tải, đã thử lại nhiều lần.',{retry:true});
+}
+
 async function callGemini({system,parts,schema}){
   if(!S.geminiKey) throw new AppErr('Chưa nhập Gemini API key (vào Cài đặt).',{pause:true});
   const body={systemInstruction:{parts:[{text:system}]},contents:[{role:'user',parts}],
@@ -927,10 +1007,8 @@ async function analyzePaper(p){
   const scanned=chars<pages.length*200;
   const inline=blob.size<=14*1024*1024;
   if(!inline&&scanned) throw new AppErr('File >14MB và là PDF dạng ảnh — gói miễn phí không xử lý được. Hãy nén file rồi tải lại.');
-  const parts=inline
-    ?[{inlineData:{mimeType:'application/pdf',data:await blobToB64(blob)}},{text:'Extract the fields from this article.'}]
-    :[{text:'Article text (file too large to attach). Page markers "=== Trang N ===" give PDF page numbers.\n\n'+pages.map((t,i)=>`=== Trang ${i+1} ===\n${t}`).join('\n\n')},{text:'Extract the fields from this article.'}];
-  const ai=await callGemini({system:SYS_EXTRACT,parts,schema:EXTRACT_SCHEMA});
+  const text=inline?'':'Article text (file too large to attach). Page markers "=== Trang N ===" give PDF page numbers.\n\n'+pages.map((t,i)=>`=== Trang ${i+1} ===\n${t}`).join('\n\n');
+  const ai=await callAI({system:SYS_EXTRACT,pdfB64:inline?await blobToB64(blob):null,filename:p.file_name,text,prompt:'Extract the fields from this article.',schema:EXTRACT_SCHEMA});
   return {fields:buildFields(ai,p,npages,scanned),summary:String(ai.summary||'').trim(),page_count:pages.length};
 }
 async function analyzeRule(p){
@@ -945,7 +1023,7 @@ async function analyzeRule(p){
 // ---------- hàng đợi ----------
 async function runQueue(){
   if(Q.running) return;
-  if(S.mode==='ai'&&!S.geminiKey){Q.paused=true;Q.pauseReason='Chưa có Gemini API key — vào Cài đặt để nhập, hoặc chuyển sang chế độ Không dùng AI.';renderQueueBox();return}
+  if(S.mode==='ai'&&!aiKey()){Q.paused=true;Q.pauseReason=`Chưa có ${PROVIDER_NAME[S.provider]} API key — vào Cài đặt để nhập, hoặc chuyển sang chế độ Không dùng AI.`;renderQueueBox();return}
   Q.running=true;Q.paused=false;Q.pauseReason='';clearTimeout(Q.resumeTimer);renderQueueBox();
   try{
     while(!Q.paused){
@@ -964,7 +1042,7 @@ async function processPaper(p){
     refresh();
     const r=await analyzePaper(getPaper(p.id)||p);
     if(!getPaper(p.id)) return;
-    await patchPaper(p.id,{status:'done',fields:r.fields,summary:r.summary,page_count:r.page_count,ai_model:S.mode==='ai'?S.model:'Tự động (không AI)',analyzed_at:new Date().toISOString(),error:null,overwrite_all:false});
+    await patchPaper(p.id,{status:'done',fields:r.fields,summary:r.summary,page_count:r.page_count,ai_model:S.mode==='ai'?aiLabel():'Tự động (không AI)',analyzed_at:new Date().toISOString(),error:null,overwrite_all:false});
   }catch(e){
     console.error(e);
     try{
@@ -1049,7 +1127,7 @@ function renderDashboard(){
   $('#main').innerHTML=`
   <div class="page-head"><div><h1>Tổng quan</h1><p>Theo dõi tiến trình phân tích và chất lượng dữ liệu.</p></div>
     <a class="btn primary" href="#/upload">${icon('upload')}Tải lên bài báo</a></div>
-  ${S.mode==='ai'&&!S.geminiKey?`<div class="callout warn">Đang ở chế độ <b>Dùng AI</b> nhưng chưa có Gemini API key. <a href="#/settings">Vào Cài đặt</a> để nhập key, hoặc chuyển sang chế độ Không dùng AI.</div>`:''}
+  ${S.mode==='ai'&&!aiKey()?`<div class="callout warn">Đang ở chế độ <b>Dùng AI</b> nhưng chưa có ${PROVIDER_NAME[S.provider]} API key. <a href="#/settings">Vào Cài đặt</a> để nhập key, hoặc chuyển sang chế độ Không dùng AI.</div>`:''}
   ${Q.running?`<div class="callout">Đang phân tích hàng đợi. <b>Hãy giữ tab này mở</b> cho đến khi xong; đóng tab thì hàng đợi tạm dừng và chạy tiếp ở lần mở sau.</div>`:''}
   <div class="stats">
     <div class="stat"><b>${c.total}</b><span>Tổng số bài báo</span></div>
@@ -1494,17 +1572,17 @@ async function runQuick(){
   state.reports.unshift(row);location.hash='#/compare/'+row.id;
 }
 async function runCompare(){
-  if(!S.geminiKey) return toast('So sánh bằng AI cần Gemini key (Cài đặt). Dùng “Tổng hợp nhanh” để không cần AI.','error');
+  if(!aiKey()) return toast(`So sánh bằng AI cần ${PROVIDER_NAME[S.provider]} API key (Cài đặt). Dùng “Tổng hợp nhanh” để không cần AI.`,'error');
   const papers=sortedPapers().filter(p=>p.status==='done'&&state.selected.has(p.id));
   if(papers.length<2) return toast('Hãy chọn ít nhất 2 bài đã phân tích.');
   if(papers.length>80&&!await confirmBox('Nhiều bài báo',`Bạn chọn ${papers.length} bài — có thể vượt giới hạn gói miễn phí. Vẫn tiếp tục?`)) return;
   state.comparing=true;renderCompare();
   try{
     const data=papers.map((p,i)=>`[${i+1}] ${titleOf(p)}\n`+CMP_KEYS.map(k=>`- ${FMAP[k].label}: ${trunc(fv(p,k)||NA,1500)}`).join('\n')).join('\n\n');
-    let md=await callGemini({system:SYS_COMPARE,parts:[{text:data}]});
+    let md=await callAI({system:SYS_COMPARE,text:data});
     md=md.replace(/^```(?:markdown|md)?\s*/i,'').replace(/```\s*$/,'').trim();
     md+=`\n\n## Danh sách bài báo\n`+papers.map((p,i)=>`[${i+1}] ${fv(p,'author_year')||''} — ${fv(p,'title')||p.file_name}`).join('\n\n');
-    const {data:row,error}=await sb.from('reports').insert({title:`So sánh ${papers.length} bài báo – ${new Date().toLocaleDateString('vi-VN')}`,paper_ids:papers.map(p=>p.id),content:md,ai_model:S.model}).select().single();
+    const {data:row,error}=await sb.from('reports').insert({title:`So sánh ${papers.length} bài báo – ${new Date().toLocaleDateString('vi-VN')}`,paper_ids:papers.map(p=>p.id),content:md,ai_model:aiLabel()}).select().single();
     if(error) throw error;
     state.reports.unshift(row);state.comparing=false;location.hash='#/compare/'+row.id;
   }catch(e){state.comparing=false;toast('Không tạo được báo cáo: '+e.message,'error');if(curRoute().page==='compare')renderCompare()}
@@ -1592,26 +1670,37 @@ function renderSettings(){
   <div class="card" style="margin-bottom:16px"><div class="form">
     <h2 style="margin:0">Cách phân tích bài báo</h2>
     <label class="opt"><input type="radio" name="mode" value="rule" ${S.mode!=='ai'?'checked':''}><span><b>Không dùng AI (khuyên dùng)</b> — nhanh (vài giây/bài), không cần key, không giới hạn lượt. Lấy dữ liệu trực tiếp từ chữ trong PDF; nội dung giữ nguyên tiếng Anh theo bài gốc. Biến nghiên cứu được đoán từ giả thuyết H1, H2… nên cần kiểm tra lại.</span></label>
-    <label class="opt"><input type="radio" name="mode" value="ai" ${S.mode==='ai'?'checked':''}><span><b>Dùng AI (Gemini)</b> — tóm tắt bằng tiếng Việt, xác định biến tốt hơn, nhưng chậm và phụ thuộc giới hạn gói miễn phí.</span></label>
+    <label class="opt"><input type="radio" name="mode" value="ai" ${S.mode==='ai'?'checked':''}><span><b>Dùng AI (Gemini hoặc OpenAI GPT)</b> — tóm tắt và phân tích bằng tiếng Việt, xác định biến tốt hơn, nhưng chậm hơn và phụ thuộc key/giới hạn của nhà cung cấp.</span></label>
     <label class="opt"><input type="checkbox" id="gcr" ${S.crossref!==false?'checked':''}><span>Tra <b>Crossref</b> theo DOI (miễn phí, không phải AI) để lấy chính xác tên bài, tác giả, tạp chí, năm, nhà xuất bản và tạo trích dẫn APA. Chỉ gửi mã DOI, không gửi nội dung bài.</span></label>
     <div class="row"><button class="btn primary" data-act="saveSettings">Lưu cài đặt</button></div>
   </div></div>
   <div class="card"><div class="form">
     <h2 style="margin:0">Thiết lập AI (chỉ dùng khi chọn “Dùng AI”)</h2>
-    <label>Gemini API key <small>Lấy miễn phí tại <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>. Key chỉ lưu trong trình duyệt này và chỉ gửi tới Google.</small>
-      <div class="row"><input type="password" id="gk" value="${esc(S.geminiKey)}" style="flex:1" autocomplete="off"><button class="btn sm" data-act="toggleKey">Hiện</button></div></label>
-    <label>Model AI <small>Bấm “Kiểm tra key” để tải danh sách model khả dụng.</small>
-      <div class="row"><input type="text" id="gm" list="gml" value="${esc(S.model)}" style="flex:1"><datalist id="gml"></datalist><button class="btn sm" data-act="checkKey">Kiểm tra key</button></div></label>
-    <label>Khoảng nghỉ giữa 2 lần phân tích (giây) <small>Tăng lên nếu hay gặp lỗi giới hạn tốc độ của gói miễn phí.</small>
+    <div><b>Nhà cung cấp AI</b>
+      <label class="opt"><input type="radio" name="prov" value="gemini" ${S.provider!=='openai'?'checked':''} data-act="provPick"><span><b>Google Gemini</b> — có gói miễn phí (giới hạn lượt/ngày; Google có thể dùng dữ liệu gói miễn phí để cải thiện sản phẩm).</span></label>
+      <label class="opt"><input type="radio" name="prov" value="openai" ${S.provider==='openai'?'checked':''} data-act="provPick"><span><b>OpenAI (GPT)</b> — trả phí theo lượng dùng (cần nạp credit), thường nhanh và ổn định hơn; theo chính sách của OpenAI, dữ liệu gửi qua API mặc định không dùng để huấn luyện.</span></label></div>
+    <div id="provGemini" ${S.provider==='openai'?'hidden':''} class="form" style="gap:14px">
+      <label>Gemini API key <small>Lấy miễn phí tại <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>. Key chỉ lưu trong trình duyệt này và chỉ gửi tới Google.</small>
+        <div class="row"><input type="password" id="gk" value="${esc(S.geminiKey)}" style="flex:1" autocomplete="off"><button class="btn sm" data-act="toggleKey" data-for="gk">Hiện</button></div></label>
+      <label>Model Gemini <small>Bấm “Kiểm tra key” để tải danh sách model khả dụng.</small>
+        <div class="row"><input type="text" id="gm" list="gml" value="${esc(S.model)}" style="flex:1"><datalist id="gml"></datalist><button class="btn sm" data-act="checkKey">Kiểm tra key</button></div></label>
+    </div>
+    <div id="provOpenai" ${S.provider==='openai'?'':'hidden'} class="form" style="gap:14px">
+      <label>OpenAI API key <small>Tạo tại <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com/api-keys</a> (cần nạp credit ở mục Billing). Key chỉ lưu trong trình duyệt này và chỉ gửi tới OpenAI.</small>
+        <div class="row"><input type="password" id="ok" value="${esc(S.openaiKey)}" style="flex:1" autocomplete="off" placeholder="sk-..."><button class="btn sm" data-act="toggleKey" data-for="ok">Hiện</button></div></label>
+      <label>Model GPT <small>Nên dùng dòng “mini” cho rẻ. Model phải đọc được PDF (dòng gpt-4o / gpt-4.1 / gpt-5 trở lên). Bấm “Kiểm tra key” để tự chọn.</small>
+        <div class="row"><input type="text" id="om" list="oml" value="${esc(S.openaiModel)}" style="flex:1"><datalist id="oml"></datalist><button class="btn sm" data-act="checkOpenAI">Kiểm tra key</button></div></label>
+    </div>
+    <label>Khoảng nghỉ giữa 2 lần phân tích (giây) <small>Gemini miễn phí nên để 10–15 giây; OpenAI có thể để 1–3 giây.</small>
       <input type="number" id="gd" min="0" max="120" value="${S.delaySec}" style="width:120px"></label>
     <div class="row"><button class="btn primary" data-act="saveSettings">Lưu cài đặt</button></div>
-    <div class="callout small" style="margin:0">Gói miễn phí của Gemini: Google có thể dùng dữ liệu gửi lên để cải thiện sản phẩm và có giới hạn số lượt mỗi phút/ngày. Khi hết lượt, hàng đợi tự tạm dừng rồi chạy tiếp.</div>
+    <div class="callout small" style="margin:0">Khi hết lượt (Gemini) hoặc hết credit (OpenAI), hàng đợi tự tạm dừng; bài đang chờ sẽ chạy tiếp khi bạn bấm “Tiếp tục”.</div>
     <div><b>Supabase:</b> <span class="muted">${esc(normSupabaseUrl(sbUrlRaw()))}</span> <button class="link" data-act="resetSupabase">Đổi cấu hình</button> <span class="muted small">· Phiên bản ${APP_VERSION}</span></div>
   </div></div>`;
 }
 
 // ---------- Đăng nhập / cấu hình ----------
-const APP_VERSION='2.1';
+const APP_VERSION='2.2';
 const sbUrlRaw=()=>S.supabaseUrl||CONFIG.SUPABASE_URL;
 const sbKeyRaw=()=>S.supabaseKey||CONFIG.SUPABASE_ANON_KEY;
 function renderSetup(msg=''){
@@ -1668,7 +1757,7 @@ async function startApp(){
   }
   for(const p of state.papers.filter(p=>p.status==='processing')) await patchPaper(p.id,{status:'queued'}).catch(()=>{});
   renderQueueBox();route();
-  if((S.mode!=='ai'||S.geminiKey)&&state.papers.some(p=>p.status==='queued')) runQueue();
+  if((S.mode!=='ai'||aiKey())&&state.papers.some(p=>p.status==='queued')) runQueue();
 }
 async function boot(){
   try{if(!initSupabase()) return renderSetup()}catch(e){return renderSetup('Cấu hình hiện tại không dùng được: '+e.message)}
@@ -1736,8 +1825,18 @@ const ACT={
     if(unv&&!await confirmBox('Còn dữ liệu chưa xác nhận',`${unv} bài chưa được xác nhận đủ ${FIELDS.length} trường. Vẫn xuất Excel?`,'Vẫn xuất'))return;
     a.disabled=true;try{await exportExcel(list,{evidence:state.exEv!==false,summary:state.exSum!==false});toast('Đã xuất file Excel.','ok')}catch(e){toast('Lỗi xuất Excel: '+e.message,'error')}finally{a.disabled=false}
   },
-  toggleKey:a=>{const i=$('#gk');i.type=i.type==='password'?'text':'password';a.textContent=i.type==='password'?'Hiện':'Ẩn'},
-  saveSettings:()=>{S.mode=$('input[name=mode]:checked')?.value||'rule';S.crossref=$('#gcr').checked;S.geminiKey=$('#gk').value.trim();S.model=$('#gm').value.trim()||CONFIG.DEFAULT_MODEL;S.delaySec=Math.max(0,+$('#gd').value||0);saveSettings();toast('Đã lưu cài đặt.','ok');
+  provPick:a=>{$('#provGemini').hidden=a.value==='openai';$('#provOpenai').hidden=a.value!=='openai'},
+  checkOpenAI:async a=>{
+    const key=$('#ok').value.trim();if(!key)return toast('Nhập OpenAI key trước.');a.disabled=true;
+    try{const ms=await listOpenAIModels(key);if(!ms.length)throw new Error('Key không có model GPT nào khả dụng.');
+      $('#oml').innerHTML=ms.map(m=>`<option value="${esc(m)}">`).join('');
+      const cur=$('#om').value.trim();
+      if(!ms.includes(cur)){const pick=pickOpenAIModel(ms);$('#om').value=pick;S.openaiKey=key;S.openaiModel=pick;saveSettings();toast(`Key hợp lệ. Model “${cur}” không có — đã chọn và lưu “${pick}”.`,'ok')}
+      else toast(`Key hợp lệ — model “${cur}” dùng được (${ms.length} model khả dụng).`,'ok');
+    }catch(e){toast('Key OpenAI không hợp lệ: '+e.message,'error')}finally{a.disabled=false}
+  },
+  toggleKey:a=>{const i=$('#'+(a.dataset.for||'gk'));i.type=i.type==='password'?'text':'password';a.textContent=i.type==='password'?'Hiện':'Ẩn'},
+  saveSettings:()=>{S.mode=$('input[name=mode]:checked')?.value||'rule';S.crossref=$('#gcr').checked;S.provider=$('input[name=prov]:checked')?.value||'gemini';S.openaiKey=$('#ok').value.trim();S.openaiModel=$('#om').value.trim()||'gpt-4.1-mini';S.geminiKey=$('#gk').value.trim();S.model=$('#gm').value.trim()||CONFIG.DEFAULT_MODEL;S.delaySec=Math.max(0,+$('#gd').value||0);saveSettings();toast('Đã lưu cài đặt.','ok');
     if(state.papers.some(p=>p.status==='queued')){Q.paused=false;Q.pauseReason='';runQueue()}},
   checkKey:async a=>{
     const key=$('#gk').value.trim();if(!key)return toast('Nhập key trước.');a.disabled=true;
