@@ -353,9 +353,19 @@ const saveSel=()=>{for(const id of state.selected) if(!getPaper(id)) state.selec
 const Q={running:false,paused:false,pauseReason:'',note:'',current:null,resumeTimer:null};
 
 // ---------- Supabase ----------
+// Chuẩn hóa URL: chấp nhận cả "https://x.supabase.co/rest/v1/" hay link dashboard
+function normSupabaseUrl(u){
+  u=String(u||'').trim();
+  const dash=u.match(/supabase\.com\/dashboard\/project\/([a-z0-9]+)/i);
+  if(dash) return `https://${dash[1]}.supabase.co`;
+  if(u&&!/^https?:\/\//i.test(u)) u='https://'+u;
+  try{const x=new URL(u);return x.origin}catch{return u}
+}
 function initSupabase(){
-  const url=CONFIG.SUPABASE_URL||S.supabaseUrl,key=CONFIG.SUPABASE_ANON_KEY||S.supabaseKey;
+  const url=normSupabaseUrl(CONFIG.SUPABASE_URL||S.supabaseUrl),key=String(CONFIG.SUPABASE_ANON_KEY||S.supabaseKey||'').trim();
   if(!url||!key) return false;
+  if(!/^https:\/\/[a-z0-9-]+\.supabase\.(co|in)$/i.test(url)&&!/localhost|127\.0\.0\.1/.test(url))
+    console.warn('Supabase URL không đúng dạng https://<project>.supabase.co:',url);
   sb=supabase.createClient(url,key);return true;
 }
 async function loadData(){
@@ -1106,6 +1116,15 @@ function renderSetup(){
     <label>Anon public key<input type="text" id="sk"></label>
     <button class="btn primary" data-act="saveSetup">Lưu và tiếp tục</button></div></div>`;
 }
+function authErr(e){
+  const m=e?.message||String(e);
+  if(/invalid path|failed to fetch|invalid api key|no api key/i.test(m))
+    return `Lỗi cấu hình Supabase (${m}). Kiểm tra lại CONFIG: SUPABASE_URL phải đúng dạng https://xxxx.supabase.co (không có /rest/v1 hay dấu / ở cuối) và SUPABASE_ANON_KEY là chuỗi "anon public" trong Project Settings → API.`;
+  if(/invalid login credentials/i.test(m)) return 'Sai email hoặc mật khẩu. Nếu chưa có tài khoản, bấm "Tạo tài khoản".';
+  if(/email not confirmed/i.test(m)) return 'Email chưa được xác nhận. Mở hộp thư, bấm link xác nhận rồi đăng nhập lại.';
+  if(/signups? not allowed/i.test(m)) return 'Đăng ký tài khoản mới đang bị tắt trong Supabase.';
+  return 'Lỗi: '+m;
+}
 function renderLogin(msg=''){
   app.innerHTML=`<div class="auth"><form class="auth-card" id="lf">
     <div class="brand"><div class="logo">TL</div><div><b>Trợ lý Tổng quan Tài liệu</b><span>Đăng nhập để tiếp tục</span></div></div>
@@ -1116,7 +1135,7 @@ function renderLogin(msg=''){
   $('#lf').onsubmit=async e=>{
     e.preventDefault();$('#lmsg').textContent='Đang đăng nhập…';
     const {data,error}=await sb.auth.signInWithPassword({email:$('#le').value.trim(),password:$('#lp').value});
-    if(error) return $('#lmsg').textContent='Lỗi: '+error.message;
+    if(error) return $('#lmsg').textContent=authErr(error);
     user=data.user;startApp();
   };
 }
@@ -1146,7 +1165,7 @@ const ACT={
     const email=$('#le').value.trim(),password=$('#lp').value;
     if(!email||password.length<6) return $('#lmsg').textContent='Nhập email và mật khẩu (tối thiểu 6 ký tự).';
     const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname}});
-    if(error) return $('#lmsg').textContent='Lỗi: '+error.message;
+    if(error) return $('#lmsg').textContent=authErr(error);
     if(data.session){user=data.user;startApp()}else $('#lmsg').textContent='Đã gửi email xác nhận. Mở email, bấm link xác nhận rồi quay lại đăng nhập.';
   },
   runQueue:()=>{Q.paused=false;Q.pauseReason='';runQueue()},
