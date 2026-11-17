@@ -362,7 +362,7 @@ function normSupabaseUrl(u){
   try{const x=new URL(u);return x.origin}catch{return u}
 }
 function initSupabase(){
-  const url=normSupabaseUrl(CONFIG.SUPABASE_URL||S.supabaseUrl),key=String(CONFIG.SUPABASE_ANON_KEY||S.supabaseKey||'').trim();
+  const url=normSupabaseUrl(S.supabaseUrl||CONFIG.SUPABASE_URL),key=String(S.supabaseKey||CONFIG.SUPABASE_ANON_KEY||'').trim();
   if(!url||!key) return false;
   if(!/^https:\/\/[a-z0-9-]+\.supabase\.(co|in)$/i.test(url)&&!/localhost|127\.0\.0\.1/.test(url))
     console.warn('Supabase URL không đúng dạng https://<project>.supabase.co:',url);
@@ -1103,23 +1103,40 @@ function renderSettings(){
       <input type="number" id="gd" min="0" max="120" value="${S.delaySec}" style="width:120px"></label>
     <div class="row"><button class="btn primary" data-act="saveSettings">Lưu cài đặt</button></div>
     <div class="callout small" style="margin:0">Gói miễn phí của Gemini: Google có thể dùng dữ liệu gửi lên để cải thiện sản phẩm và có giới hạn số lượt mỗi phút/ngày. Khi hết lượt, hàng đợi tự tạm dừng rồi chạy tiếp.</div>
-    ${!CONFIG.SUPABASE_URL?`<div><b>Supabase:</b> <span class="muted">${esc(S.supabaseUrl)}</span> <button class="link" data-act="resetSupabase">Đổi cấu hình</button></div>`:''}
+    <div><b>Supabase:</b> <span class="muted">${esc(normSupabaseUrl(sbUrlRaw()))}</span> <button class="link" data-act="resetSupabase">Đổi cấu hình</button> <span class="muted small">· Phiên bản ${APP_VERSION}</span></div>
   </div></div>`;
 }
 
 // ---------- Đăng nhập / cấu hình ----------
-function renderSetup(){
+const APP_VERSION='1.2';
+const sbUrlRaw=()=>S.supabaseUrl||CONFIG.SUPABASE_URL;
+const sbKeyRaw=()=>S.supabaseKey||CONFIG.SUPABASE_ANON_KEY;
+function renderSetup(msg=''){
   app.innerHTML=`<div class="auth"><div class="auth-card">
     <h1>Kết nối Supabase</h1>
-    <p class="muted">Nhập thông tin dự án (Supabase → Project Settings → API). Hoặc điền sẵn vào <code>CONFIG</code> trong file HTML để không phải nhập.</p>
-    <label>Project URL<input type="text" id="su" placeholder="https://xxxx.supabase.co"></label>
-    <label>Anon public key<input type="text" id="sk"></label>
-    <button class="btn primary" data-act="saveSetup">Lưu và tiếp tục</button></div></div>`;
+    <p class="muted small">Lấy ở Supabase → <b>Project Settings → Data API</b> (Project URL) và <b>API Keys</b> (khóa <b>anon public</b>, bắt đầu bằng <code>eyJ</code>). Thông tin được lưu trên trình duyệt này.</p>
+    <label>Project URL<input type="text" id="su" placeholder="https://xxxx.supabase.co" value="${esc(sbUrlRaw()||'')}"></label>
+    <label>Anon public key<textarea id="sk" rows="3" style="font-size:12px;word-break:break-all">${esc(sbKeyRaw()||'')}</textarea></label>
+    <div class="row"><button class="btn" data-act="testSetup">Kiểm tra kết nối</button><button class="btn primary" data-act="saveSetup">Lưu và tiếp tục</button>
+      ${sb?'<button class="btn ghost" data-act="backLogin">Quay lại</button>':''}</div>
+    <p class="small" id="smsg">${esc(msg)}</p>
+    <p class="muted small" style="margin:0">Phiên bản ${APP_VERSION}</p></div></div>`;
+}
+async function testSupabase(url,key){
+  url=normSupabaseUrl(url);key=String(key||'').trim();
+  if(!/^https:\/\/[a-z0-9-]+\.supabase\.(co|in)$/i.test(url)) return {ok:false,msg:`URL "${url}" không đúng dạng https://xxxx.supabase.co`};
+  if(!key) return {ok:false,msg:'Chưa nhập anon key.'};
+  try{
+    const r=await fetch(url+'/auth/v1/settings',{headers:{apikey:key,Authorization:'Bearer '+key}});
+    if(r.ok) return {ok:true,url,msg:'✓ Kết nối thành công tới '+url};
+    const d=await r.json().catch(()=>({}));
+    return {ok:false,msg:`Supabase trả lỗi ${r.status}: ${d.message||d.msg||d.error||r.statusText}. ${r.status===401?'Anon key sai.':''}`};
+  }catch(e){return {ok:false,msg:'Không kết nối được tới '+url+' — kiểm tra lại Project URL. ('+e.message+')'}}
 }
 function authErr(e){
   const m=e?.message||String(e);
   if(/invalid path|failed to fetch|invalid api key|no api key/i.test(m))
-    return `Lỗi cấu hình Supabase (${m}). Kiểm tra lại CONFIG: SUPABASE_URL phải đúng dạng https://xxxx.supabase.co (không có /rest/v1 hay dấu / ở cuối) và SUPABASE_ANON_KEY là chuỗi "anon public" trong Project Settings → API.`;
+    return `Lỗi kết nối Supabase (${m}). Bấm "Cấu hình kết nối Supabase" bên dưới để nhập lại Project URL (dạng https://xxxx.supabase.co) và anon key.`;
   if(/invalid login credentials/i.test(m)) return 'Sai email hoặc mật khẩu. Nếu chưa có tài khoản, bấm "Tạo tài khoản".';
   if(/email not confirmed/i.test(m)) return 'Email chưa được xác nhận. Mở hộp thư, bấm link xác nhận rồi đăng nhập lại.';
   if(/signups? not allowed/i.test(m)) return 'Đăng ký tài khoản mới đang bị tắt trong Supabase.';
@@ -1131,7 +1148,9 @@ function renderLogin(msg=''){
     <label>Email<input type="email" id="le" required autocomplete="email"></label>
     <label>Mật khẩu<input type="password" id="lp" required minlength="6" autocomplete="current-password"></label>
     <div class="row"><button class="btn primary" type="submit">Đăng nhập</button><button class="btn ghost" type="button" data-act="signup">Tạo tài khoản</button></div>
-    <p class="muted small" id="lmsg">${esc(msg)}</p></form></div>`;
+    <p class="small" id="lmsg" style="color:var(--danger)">${esc(msg)}</p>
+    <div class="muted small" style="border-top:1px solid var(--border);padding-top:10px">Đang kết nối: <code>${esc(normSupabaseUrl(sbUrlRaw()))}</code><br>
+      <button class="link" type="button" data-act="openSetup">Cấu hình kết nối Supabase</button> · Phiên bản ${APP_VERSION}</div></form></div>`;
   $('#lf').onsubmit=async e=>{
     e.preventDefault();$('#lmsg').textContent='Đang đăng nhập…';
     const {data,error}=await sb.auth.signInWithPassword({email:$('#le').value.trim(),password:$('#lp').value});
@@ -1149,7 +1168,7 @@ async function startApp(){
   if(S.geminiKey&&state.papers.some(p=>p.status==='queued')) runQueue();
 }
 async function boot(){
-  if(!initSupabase()) return renderSetup();
+  try{if(!initSupabase()) return renderSetup()}catch(e){return renderSetup('Cấu hình hiện tại không dùng được: '+e.message)}
   sb.auth.onAuthStateChange(ev=>{if(ev==='SIGNED_OUT'){user=null;renderLogin()}});
   const {data:{session}}=await sb.auth.getSession();
   if(!session) return renderLogin();
@@ -1159,8 +1178,14 @@ async function boot(){
 // ---------- sự kiện ----------
 const ACT={
   logout:async()=>{if(Q.running&&!await confirmBox('Đăng xuất?','Hàng đợi đang chạy sẽ dừng lại.'))return;Q.paused=true;await sb.auth.signOut()},
-  saveSetup:()=>{S.supabaseUrl=$('#su').value.trim();S.supabaseKey=$('#sk').value.trim();if(!S.supabaseUrl||!S.supabaseKey)return toast('Nhập đủ 2 ô.');saveSettings();location.reload()},
-  resetSupabase:async()=>{if(await confirmBox('Đổi cấu hình Supabase?','Bạn sẽ cần nhập lại URL và key.')){S.supabaseUrl='';S.supabaseKey='';saveSettings();location.reload()}},
+  testSetup:async a=>{a.disabled=true;$('#smsg').textContent='Đang kiểm tra…';const r=await testSupabase($('#su').value,$('#sk').value);$('#smsg').textContent=r.msg;$('#smsg').style.color=r.ok?'var(--ok)':'var(--danger)';if(r.ok)$('#su').value=r.url;a.disabled=false},
+  saveSetup:async a=>{
+    const r=await testSupabase($('#su').value,$('#sk').value);
+    if(!r.ok){$('#smsg').textContent=r.msg;$('#smsg').style.color='var(--danger)';return}
+    S.supabaseUrl=r.url;S.supabaseKey=$('#sk').value.trim();saveSettings();location.reload()},
+  openSetup:()=>renderSetup(),
+  backLogin:()=>renderLogin(),
+  resetSupabase:async()=>{if(Q.running&&!await confirmBox('Đổi cấu hình?','Hàng đợi đang chạy sẽ dừng.'))return;Q.paused=true;renderSetup()},
   signup:async()=>{
     const email=$('#le').value.trim(),password=$('#lp').value;
     if(!email||password.length<6) return $('#lmsg').textContent='Nhập email và mật khẩu (tối thiểu 6 ký tự).';
