@@ -228,30 +228,32 @@ const CONFIG = {
 // ---------------------------------------------------------------------
 const NA = 'Không được đề cập';
 const FIELDS = [
-  {k:'title',label:'Tên bài báo',w:36,hint:'Full title in original language, not translated'},
-  {k:'short_title',label:'Tên bài báo rút gọn',w:24,hint:'Short title ≤ 8 words, original language; quote may be empty'},
-  {k:'journal',label:'Tên tạp chí',w:24,hint:'Journal name as printed'},
-  {k:'year',label:'Năm xuất bản',w:10,hint:'Publication year (4 digits)'},
-  {k:'rank',label:'Xếp hạng tạp chí',xl:'Xếp hạng tạp chí (Q1, Q2, Q3, Q4)',w:10},
-  {k:'author_year',label:'Tác giả (Năm)',w:22,hint:'APA in-text form, e.g. "Smith & Lee (2023)" or "Smith et al. (2023)"'},
-  {k:'publisher',label:'Nhà xuất bản',w:18,hint:'Publisher as printed (header, footer, copyright line)'},
-  {k:'design',label:'Thiết kế nghiên cứu',w:36,hint:'Approach (định lượng/định tính/hỗn hợp), data collection, sample size, sampling, analysis technique (e.g. PLS-SEM)'},
-  {k:'context',label:'Bối cảnh nghiên cứu',w:28,hint:'Country, sector, population, period'},
-  {k:'theory',label:'Lý thuyết nền tảng',w:28,hint:'Underpinning theories'},
-  {k:'iv',label:'Biến độc lập',w:28,hint:'Independent variables separated by "; " — English name as in article + Vietnamese gloss'},
-  {k:'med',label:'Biến trung gian',w:22,hint:'Mediators, same format'},
-  {k:'mod',label:'Biến điều tiết',w:22,hint:'Moderators, same format'},
-  {k:'dv',label:'Biến phụ thuộc',w:22,hint:'Dependent variables, same format'},
-  {k:'ctrl',label:'Biến kiểm soát',w:22,hint:'Control variables, same format'},
-  {k:'model',label:'Mô hình nghiên cứu',w:36,hint:'Hypothesised relationships, e.g. "H1: Attitude → Intention (+)"'},
-  {k:'findings',label:'Kết quả nghiên cứu chính',w:44,hint:'Key results: supported/rejected hypotheses, key coefficients / R² if reported'},
-  {k:'scales',label:'Thang đo',w:36,hint:'Measurement: construct – number of items – source – Likert type'},
-  {k:'conclusion',label:'Kết luận',w:36,hint:'Main conclusions and implications'},
-  {k:'limitations',label:'Hạn chế nghiên cứu',w:36,hint:'Limitations and future research stated by the authors'},
-  {k:'cite_link',label:'Link trích dẫn',w:28,hint:'URL of the article as printed in the paper (journal page), not the DOI'},
-  {k:'apa',label:'Trích dẫn theo chuẩn APA',w:44,hint:'Full APA 7 reference built only from details printed in the article; quote may be empty'},
-  {k:'doi',label:'Link DOI',w:28,hint:'DOI as printed, e.g. 10.1234/abcd'},
-  {k:'anomalies',label:'Điểm bất thường cần lưu ý',w:36,hint:'Issues worth checking: inconsistent numbers, missing reliability/validity, sample problems, unsupported claims, retraction notice. "Không phát hiện" if none'},
+  {k:'title',label:'Tên bài báo',xl:'Article title',w:36,hint:'Full title in original language, not translated'},
+  {k:'short_title',label:'Tên bài báo rút gọn',xl:'Article title -SUB',w:24,hint:'Short title ≤ 8 words, original language; quote may be empty'},
+  {k:'journal',label:'Tên tạp chí',xl:'Journal',w:24,hint:'Journal name as printed'},
+  {k:'year',label:'Năm xuất bản',xl:'Year',w:10,hint:'Publication year (4 digits)'},
+  {k:'rank',label:'Xếp hạng tạp chí',xl:'Quartile',w:10},
+  {k:'author_year',label:'Tác giả (Năm)',xl:'Author (Year)',w:22,hint:'APA in-text form, e.g. "Smith & Lee (2023)" or "Smith et al. (2023)"'},
+  {k:'publisher',label:'Nhà xuất bản',xl:'Publisher',w:18,hint:'Publisher as printed (header, footer, copyright line)'},
+  {k:'design',label:'Thiết kế nghiên cứu',xl:'Research design',w:36,hint:'In Vietnamese: approach (định lượng/định tính/hỗn hợp), data source, period, sample size / observations, sampling, estimation technique (e.g. PLS-SEM, FEM, GMM)'},
+  {k:'context',label:'Bối cảnh nghiên cứu',xl:'Context\nBối cảnh',w:28,hint:'Country, sector, population, period'},
+  {k:'theory',label:'Lý thuyết nền tảng',xl:'Theory\nLý thuyết',w:28,hint:'Underpinning theories'},
+  {k:'iv',label:'Biến độc lập',xl:'Antecedent\nBiến độc lập',w:28,hint:'Independent variables separated by "; " — English name as in article + Vietnamese gloss'},
+  {k:'med',label:'Biến trung gian',xl:'Mediator\nTrung gian',w:22,hint:'Mediators, same format'},
+  {k:'mod',label:'Biến điều tiết',xl:'Moderator\nĐiều tiết',w:22,hint:'Moderators, same format'},
+  {k:'dv',label:'Biến phụ thuộc',xl:'Dependent\nPhụ thuộc',w:22,hint:'Dependent variables, same format'},
+  {k:'ctrl',label:'Biến kiểm soát',xl:'Control Variables\nBiến kiểm soát',w:22,hint:'Control variables, same format'},
+  {k:'model',label:'Mô hình nghiên cứu',xl:'Model',w:36,hint:'Regression equation(s) if given (copy as printed), otherwise the paths, e.g. "H1: Attitude → Intention (+)"'},
+  {k:'findings',label:'Kết quả nghiên cứu chính',xl:'Key findings\nKết quả',w:44,hint:'In Vietnamese, one line per hypothesis: "H1 (X → Y): ủng hộ/bác bỏ, cùng chiều/ngược chiều (β = …, p = …)", then other key results (controls, R²)'},
+  {k:'scales',label:'Thang đo',xl:'Scale?\nThang đo',w:36,hint:'Measurement: construct – number of items – source – Likert type'},
+  {k:'conclusion',label:'Kết luận',xl:'Conclusion\nKết luận',w:36,hint:'Main conclusions and implications'},
+  {k:'limitations',label:'Hạn chế nghiên cứu',xl:'Limitations\nHạn chế',w:36,hint:'Limitations and future research stated by the authors'},
+  {k:'cite_link',label:'Link trích dẫn',xl:'Trích dẫn link',w:28,hint:'URL of the article as printed in the paper (journal page), not the DOI'},
+  {k:'apa',label:'Trích dẫn theo chuẩn APA',xl:'Trích dẫn APA',w:44,hint:'Full APA 7 reference built only from details printed in the article; quote may be empty'},
+  {k:'doi',label:'Link DOI',xl:'LINK DOI',w:28,hint:'DOI as printed, e.g. 10.1234/abcd'},
+  {k:'anomalies',label:'Điểm bất thường cần lưu ý',xl:'ĐIỂM BẤT THƯỜNG',w:36,hint:'Issues worth checking: inconsistent numbers, missing reliability/validity, sample problems, unsupported claims, retraction notice. "Không phát hiện" if none'},
+  {k:'hypotheses',label:'Giả thuyết & kết quả kiểm định',xl:'GIẢ THIẾT & KẾT QUẢ KIỂM ĐỊNH',w:60,hint:'Each hypothesis on its own line: label + statement quoted verbatim, then "→ Kết quả:" Ủng hộ/Bác bỏ (Supported/Not supported) with direction and β, t, p as reported in the results table'},
+  {k:'rq',label:'Câu hỏi nghiên cứu',xl:'CÂU HỎI NC',w:40,hint:'Research questions (RQ1, RQ2…) verbatim; if none, the stated research objective'},
 ];
 const FMAP = Object.fromEntries(FIELDS.map(f=>[f.k,f]));
 const AI_FIELDS = FIELDS.filter(f=>f.k!=='rank');
@@ -269,7 +271,7 @@ const store = {
   get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch{return d}},
   set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
 };
-const S = Object.assign({geminiKey:'',model:CONFIG.DEFAULT_MODEL,delaySec:12,supabaseUrl:'',supabaseKey:''},store.get('lr.settings',{}));
+const S = Object.assign({mode:'rule',crossref:true,geminiKey:'',model:CONFIG.DEFAULT_MODEL,delaySec:12,supabaseUrl:'',supabaseKey:''},store.get('lr.settings',{}));
 const saveSettings = ()=>store.set('lr.settings',S);
 const isNA = v=>!v||/^(không được đề cập|not mentioned|not reported|n\/?a)\.?$/i.test(String(v).trim());
 function toast(msg,type=''){const t=document.createElement('div');t.className='toast '+type;t.textContent=msg;$('#toasts').append(t);setTimeout(()=>t.remove(),type==='error'?7000:3500)}
@@ -329,7 +331,8 @@ const titleOf=p=>{const t=fv(p,'short_title');return t&&!isNA(t)?t:(!isNA(fv(p,'
 const sortedPapers=()=>[...state.papers].sort((a,b)=>((a.file_no??1e9)-(b.file_no??1e9))||a.file_name.localeCompare(b.file_name,'vi',{numeric:true}));
 const getPaper=id=>state.papers.find(p=>p.id===id);
 const statusBadge=p=>{const[s,c]=STATUS[p.status]||[p.status,''];return `<span class="badge ${c}">${p.status==='processing'?'<span class="spin"></span>':''}${s}</span>`};
-const sourceBadge=s=>s==='verified'?'<span class="badge ok">Đã xác nhận</span>':s==='edited'?'<span class="badge edit">Đã sửa</span>':'<span class="badge">AI</span>';
+const SRC_LABEL={verified:'Đã xác nhận',edited:'Đã sửa',auto:'Tự động',ai:'AI'};
+const sourceBadge=s=>s==='verified'?'<span class="badge ok">Đã xác nhận</span>':s==='edited'?'<span class="badge edit">Đã sửa</span>':`<span class="badge">${SRC_LABEL[s]||'AI'}</span>`;
 const issueChip=i=>`<span class="badge ${i==='missing'?'':'warn'}">${FLAG_LABEL[i]}</span>`;
 
 const ICONS={home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',upload:'<path d="M12 16V4M6 10l6-6 6 6M4 20h16"/>',doc:'<path d="M7 3h7l5 5v13H7zM14 3v5h5M9 13h8M9 17h8"/>',table:'<path d="M3 5h18v14H3zM3 10h18M3 15h18M9 5v14"/>',excel:'<path d="M5 3h10l4 4v14H5zM8 11l5 6M13 11l-5 6"/>',gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>'};
@@ -508,7 +511,7 @@ async function callGemini({system,parts,schema}){
   throw new AppErr('Gemini đang quá tải, đã thử lại nhiều lần.',{retry:true});
 }
 
-function buildFields(ai,p,npages,scanned){
+function buildFields(ai,p,npages,scanned,source='ai'){
   const old=p.fields||{},keep=!p.overwrite_all,out={};
   for(const f of FIELDS){
     const o=old[f.k];
@@ -524,12 +527,13 @@ function buildFields(ai,p,npages,scanned){
     let flag=String(a.flag??'').trim().toLowerCase();if(!FLAG_LABEL[flag]||flag==='missing'||flag==='quote')flag='';
     if(isNA(value)){value=NA;page='';quote=''}
     if(f.k==='doi'&&value!==NA) value=normDoi(value);
-    const fld={value,page,quote,flag,source:'ai'};
+    const fld={value,page,quote,flag,source};
+    if(a.note&&value!==NA) fld.note=a.note;
     if(quote){
       if(scanned){fld.quote_ok=null;fld.note='PDF dạng ảnh — không đối chiếu tự động được'}
       else{
         const r=verifyQuote(quote,page,npages);fld.quote_ok=r.ok;
-        if(r.ok&&r.page&&!pageList(page).includes(r.page)){fld.note=`Trích dẫn thực tế ở trang ${r.page} (AI ghi “${page||'trống'}”) — đã sửa`;fld.page=String(r.page)}
+        if(r.ok&&r.page&&!pageList(page).includes(r.page)){if(source==='ai')fld.note=`Trích dẫn thực tế ở trang ${r.page} (AI ghi “${page||'trống'}”) — đã sửa`;fld.page=String(r.page)}
         if(r.ok===false) fld.note='Không tìm thấy đoạn trích trong PDF — cần kiểm tra';
       }
     }
@@ -538,7 +542,384 @@ function buildFields(ai,p,npages,scanned){
   return out;
 }
 
+// =====================================================================
+//  CHẾ ĐỘ KHÔNG DÙNG AI — đọc chữ trong PDF + quy tắc + Crossref (theo DOI)
+// =====================================================================
+const THEORY_VI={'Theory of Planned Behavior (TPB)':'Lý thuyết hành vi có kế hoạch','Theory of Reasoned Action (TRA)':'Lý thuyết hành động hợp lý','Technology Acceptance Model (TAM)':'Mô hình chấp nhận công nghệ',
+ 'UTAUT / UTAUT2':'Lý thuyết hợp nhất về chấp nhận và sử dụng công nghệ','Diffusion of Innovation':'Lý thuyết khuếch tán đổi mới','Social Cognitive Theory':'Lý thuyết nhận thức xã hội',
+ 'Self-Determination Theory':'Lý thuyết tự quyết','Social Exchange Theory':'Lý thuyết trao đổi xã hội','Institutional Theory':'Lý thuyết thể chế','Stakeholder Theory':'Lý thuyết các bên liên quan',
+ 'Agency Theory':'Lý thuyết đại diện','Legitimacy Theory':'Lý thuyết hợp pháp','Signaling Theory':'Lý thuyết tín hiệu','Resource-Based View (RBV)':'Quan điểm dựa trên nguồn lực',
+ 'Dynamic Capabilities':'Lý thuyết năng lực động','Upper Echelons Theory':'Lý thuyết cấp trên (thượng tầng)','Stewardship Theory':'Lý thuyết quản gia','Resource Dependence Theory':'Lý thuyết phụ thuộc nguồn lực',
+ 'Transaction Cost Theory':'Lý thuyết chi phí giao dịch','Expectation-Confirmation Theory':'Lý thuyết kỳ vọng – xác nhận','IS Success Model (DeLone & McLean)':'Mô hình thành công HTTT',
+ 'Protection Motivation Theory':'Lý thuyết động cơ bảo vệ','Deterrence Theory':'Lý thuyết răn đe','Slippery Slope Framework':'Khung lý thuyết dốc trượt','Fischer Model':'Mô hình Fischer',
+ 'Social Identity Theory':'Lý thuyết bản sắc xã hội','Social Learning Theory':'Lý thuyết học tập xã hội','Equity Theory':'Lý thuyết công bằng','Expectancy Theory':'Lý thuyết kỳ vọng',
+ 'Goal-Setting Theory':'Lý thuyết thiết lập mục tiêu','Job Demands-Resources (JD-R)':'Mô hình yêu cầu – nguồn lực công việc','Conservation of Resources (COR)':'Lý thuyết bảo toàn nguồn lực',
+ 'Stimulus-Organism-Response (S-O-R)':'Mô hình kích thích – chủ thể – phản ứng','Uses and Gratifications Theory':'Lý thuyết sử dụng và hài lòng','Commitment-Trust Theory':'Lý thuyết cam kết – niềm tin',
+ 'Norm Activation Model':'Mô hình kích hoạt chuẩn mực','Value-Belief-Norm Theory':'Lý thuyết giá trị – niềm tin – chuẩn mực','Attribution Theory':'Lý thuyết quy kết','Prospect Theory':'Lý thuyết triển vọng',
+ 'Contingency Theory':'Lý thuyết ngẫu nhiên (bất định)','Human Capital Theory':'Lý thuyết vốn con người','Social Capital Theory':'Lý thuyết vốn xã hội','Knowledge-Based View':'Quan điểm dựa trên tri thức',
+ 'Task-Technology Fit':'Lý thuyết phù hợp nhiệm vụ – công nghệ','Cognitive Dissonance Theory':'Lý thuyết bất hòa nhận thức','Trust Theory':'Lý thuyết niềm tin','Push-Pull-Mooring':'Mô hình đẩy – kéo – neo giữ',
+ 'Health Belief Model':'Mô hình niềm tin sức khỏe','Social Role Theory':'Lý thuyết vai trò xã hội','Critical Mass Theory':'Lý thuyết khối lượng tới hạn','Tokenism Theory':'Lý thuyết biểu tượng (tokenism)',
+ 'Positive Accounting Theory':'Lý thuyết kế toán thực chứng','Political Cost Theory':'Lý thuyết chi phí chính trị','Tax Morale':'Đạo đức thuế (tax morale)','Psychological Contract Theory':'Lý thuyết hợp đồng tâm lý'};
+const THEORIES=[
+ ['Social Role Theory',/social role theory/i],['Critical Mass Theory',/critical mass theory/i],['Tokenism Theory',/tokenism/i],['Positive Accounting Theory',/positive accounting theory/i],
+ ['Political Cost Theory',/political cost (theory|hypothesis)/i],['Tax Morale',/tax morale/i],['Psychological Contract Theory',/psychological contract/i],
+ ['Theory of Planned Behavior (TPB)',/theory of planned behaviou?r|\bTPB\b/i],['Theory of Reasoned Action (TRA)',/theory of reasoned action|\bTRA\b/],
+ ['Technology Acceptance Model (TAM)',/technology acceptance model|\bTAM\b/],['UTAUT / UTAUT2',/unified theory of acceptance and use|\bUTAUT2?\b/i],
+ ['Diffusion of Innovation',/diffusion of innovations?/i],['Social Cognitive Theory',/social cognitive theory/i],['Self-Determination Theory',/self[- ]determination theory/i],
+ ['Social Exchange Theory',/social exchange theory/i],['Institutional Theory',/institutional theory/i],['Stakeholder Theory',/stakeholder theory/i],
+ ['Agency Theory',/agency theory/i],['Legitimacy Theory',/legitimacy theory/i],['Signaling Theory',/signall?ing theory/i],
+ ['Resource-Based View (RBV)',/resource[- ]based (view|theory)|\bRBV\b/i],['Dynamic Capabilities',/dynamic capabilit(y|ies) (theory|view|perspective)/i],
+ ['Upper Echelons Theory',/upper echelons? theory/i],['Stewardship Theory',/stewardship theory/i],['Resource Dependence Theory',/resource dependence theory/i],
+ ['Transaction Cost Theory',/transaction cost (theory|economics)/i],['Expectation-Confirmation Theory',/expectation[- ]confirmation (theory|model)/i],
+ ['IS Success Model (DeLone & McLean)',/information systems? success model|\bIS success model|delone and mclean/i],['Protection Motivation Theory',/protection motivation theory/i],
+ ['Deterrence Theory',/deterrence theory|economic deterrence/i],['Slippery Slope Framework',/slippery slope/i],['Fischer Model',/fischer(['’]s)? model/i],
+ ['Social Identity Theory',/social identity theory/i],['Social Learning Theory',/social learning theory/i],['Equity Theory',/equity theory/i],
+ ['Expectancy Theory',/expectancy theory/i],['Goal-Setting Theory',/goal[- ]setting theory/i],['Job Demands-Resources (JD-R)',/job demands?[- ]resources?/i],
+ ['Conservation of Resources (COR)',/conservation of resources/i],['Stimulus-Organism-Response (S-O-R)',/stimulus[- ]organism[- ]response|\bS-O-R\b/i],
+ ['Uses and Gratifications Theory',/uses and gratifications?/i],['Commitment-Trust Theory',/commitment[- ]trust theory/i],['Norm Activation Model',/norm activation (model|theory)/i],
+ ['Value-Belief-Norm Theory',/value[- ]belief[- ]norm/i],['Attribution Theory',/attribution theory/i],['Prospect Theory',/prospect theory/i],
+ ['Contingency Theory',/contingency theory/i],['Human Capital Theory',/human capital theory/i],['Social Capital Theory',/social capital theory/i],
+ ['Knowledge-Based View',/knowledge[- ]based view/i],['Task-Technology Fit',/task[- ]technology fit/i],['Cognitive Dissonance Theory',/cognitive dissonance theory/i],
+ ['Trust Theory',/trust theory/i],['Push-Pull-Mooring',/push[- ]pull[- ]mooring/i],['Health Belief Model',/health belief model/i],
+];
+const ANALYSIS=[['PLS-SEM',/PLS[- ]SEM|partial least squares|SmartPLS/i],['CB-SEM',/CB-SEM|covariance[- ]based SEM|\bAMOS\b|LISREL/i],['SEM',/structural equation model/i],
+ ['Regression',/regression/i],['ANOVA',/\bANOVA\b|analysis of variance/i],['fsQCA',/fsQCA|qualitative comparative analysis/i],['Panel data / GMM',/panel data|\bGMM\b/i],
+ ['EFA/CFA',/exploratory factor analysis|confirmatory factor analysis|\bEFA\b|\bCFA\b/],['Thematic analysis',/thematic analysis/i],['Content analysis',/content analysis/i],
+ ['Meta-analysis',/meta-analy/i],['Bibliometric analysis',/bibliometric/i],['DEA',/data envelopment/i],['Bootstrapping',/bootstrap/i],['IPMA',/importance[- ]performance map/i]];
+const COLLECT=[['Khảo sát bảng hỏi (questionnaire/survey)',/questionnaire|survey/i],['Phỏng vấn (interview)',/\binterview/i],['Thảo luận nhóm (focus group)',/focus group/i],
+ ['Nghiên cứu tình huống (case study)',/case stud(y|ies)/i],['Thực nghiệm (experiment)',/\bexperiment(al)? (design|study|group)/i],['Dữ liệu thứ cấp (secondary/archival)',/secondary data|archival|annual reports?|financial statements/i]];
+const SAMPLING=[['systematic random sampling',/systematic (random )?sampling/i],['simple random sampling',/simple random sampling/i],['stratified sampling',/stratified (random )?sampling/i],
+ ['convenience sampling',/convenience sampling/i],['purposive sampling',/purposive sampling/i],['snowball sampling',/snowball sampling/i],['quota sampling',/quota sampling/i],['cluster sampling',/cluster sampling/i]];
+const SECTORS=[['SMEs',/\bSMEs?\b|small and medium/i],['Manufacturing',/manufactur/i],['Banking',/\bbank(s|ing)\b/i],['Hospitality / Tourism',/hotel|hospitality|touris/i],
+ ['Higher education / Students',/universit(y|ies)|higher education|\bstudents\b/i],['Healthcare',/hospital|health ?care/i],['Retail',/\bretail/i],['E-commerce',/e-commerce|online shopping/i],
+ ['Public sector',/public sector|public organi[sz]ation|civil servant/i],['Construction',/construction (industry|firms|compan)/i],['Agriculture',/agricultur|farmers/i],
+ ['Fintech / Mobile payment',/fintech|mobile payment|e-wallet/i],['Taxpayers / Tax',/taxpayers?|\btax\b/i],['Listed firms',/listed (firms|companies)/i],
+ ['Employees',/\bemployees\b/i],['Consumers / Customers',/\bconsumers\b|\bcustomers\b/i],['Banking customers',/bank customers/i]];
+const COUNTRIES='Afghanistan,Albania,Algeria,Argentina,Australia,Austria,Bahrain,Bangladesh,Belgium,Bolivia,Bosnia,Brazil,Brunei,Bulgaria,Cambodia,Cameroon,Canada,Chile,China,Colombia,Croatia,Cyprus,Czech Republic,Denmark,Ecuador,Egypt,Estonia,Ethiopia,Finland,France,Germany,Ghana,Greece,Hong Kong,Hungary,India,Indonesia,Iran,Iraq,Ireland,Israel,Italy,Japan,Jordan,Kazakhstan,Kenya,Korea,Kuwait,Laos,Latvia,Lebanon,Libya,Lithuania,Malaysia,Mexico,Mongolia,Morocco,Myanmar,Nepal,Netherlands,New Zealand,Nigeria,Norway,Oman,Pakistan,Palestine,Peru,Philippines,Poland,Portugal,Qatar,Romania,Russia,Rwanda,Saudi Arabia,Serbia,Singapore,Slovakia,Slovenia,South Africa,Spain,Sri Lanka,Sudan,Sweden,Switzerland,Syria,Taiwan,Tanzania,Thailand,Tunisia,Turkey,Türkiye,Uganda,Ukraine,United Arab Emirates,UAE,United Kingdom,UK,United States,USA,Uzbekistan,Vietnam,Viet Nam,Yemen,Zambia,Zimbabwe'.split(',');
+const PUBLISHERS=[['MDPI',/\bMDPI\b/],['Elsevier',/Elsevier|ScienceDirect/i],['Springer',/Springer/i],['Emerald',/Emerald/i],['Taylor & Francis',/Taylor\s*&\s*Francis|Routledge|Cogent/i],
+ ['Wiley',/Wiley/i],['SAGE',/\bSAGE\b/],['Frontiers',/Frontiers Media|frontiersin/i],['Hindawi',/Hindawi/i],['PLOS',/\bPLOS\b|PLoS/],['IGI Global',/IGI Global/i],
+ ['Inderscience',/Inderscience/i],['Cambridge University Press',/Cambridge University Press/i],['Oxford University Press',/Oxford University Press/i],['IEEE',/\bIEEE\b/],
+ ['De Gruyter',/De Gruyter/i],['Palgrave Macmillan',/Palgrave/i],['Growing Science',/Growing Science/i],['EconJournals',/econjournals/i],['Business Perspectives',/Business Perspectives/i],['Korea Distribution Science Association',/KODISA|Korea Distribution Science/i]];
+
+async function extractDocFull(buf){
+  const doc=await pdfjsLib.getDocument({data:buf}).promise;
+  const pages=[];let p1=[];
+  for(let i=1;i<=doc.numPages;i++){
+    const tc=await (await doc.getPage(i)).getTextContent();
+    pages.push(tc.items.map(it=>it.str+(it.hasEOL?'\n':' ')).join('').replace(/[ \t]+/g,' '));
+    if(i===1) p1=tc.items.map(it=>({s:it.str,h:Math.hypot(it.transform[2],it.transform[3])}));
+  }
+  await doc.destroy();return {pages,p1};
+}
+function toSentences(lines){
+  let text='';const marks=[];
+  for(const l of lines){const t=l.t.trim();if(!t)continue;
+    if(/[a-z]-$/.test(text)) text=text.slice(0,-1);else if(text) text+=' ';
+    marks.push([text.length,l.p]);text+=t}
+  const prot=text.replace(/\b(et al|e\.g|i\.e|etc|vs|Fig|Figs|Eq|No|Vol|pp|cf|approx|resp|Dr|Prof)\./gi,m=>m.slice(0,-1)+'\u2024')
+    .replace(/(\(\s*H\d{1,2}[a-z]?\s*\)\s*)\./g,'$1\u2024').replace(/\b(Hypothesis\s+\d{1,2}[a-z]?|H\d{1,2}[a-z]?)\./g,'$1\u2024');
+  const out=[],re=/[^]*?[.!?](?=\s+["“(\[]?[A-Z0-9]|\s*$)|[^]+$/g;let m;
+  while((m=re.exec(prot))){
+    if(!m[0]) {re.lastIndex++;continue}
+    const lead=m[0].length-m[0].trimStart().length,start=m.index+lead;
+    let p=marks.length?marks[0][1]:1;for(const [o,pg] of marks){if(o<=start)p=pg;else break}
+    const s=m[0].trim().replace(/\u2024/g,'.').replace(/\s+([,.;:)\]%])/g,'$1').replace(/([(\[])\s+/g,'$1');
+    if(s.length>=25&&s.length<=700) out.push({s,p});
+  }
+  return out;
+}
+const SECKEYS=[['references',/^(references|bibliography|literature cited|reference list)\b/i],['limitations',/limitation/i],['conclusion',/conclu/i],
+ ['discussion',/discussion|implication/i],['results',/^(results?|findings|data analysis|analysis and results|empirical results|hypothes[ie]s testing)/i],
+ ['method',/method|research design|data collection|materials|sample|measure/i],['lit',/literature|theor|hypothes|conceptual|background|research model/i],['intro',/^introduction/i],['abstract',/^abstract/i]];
+function headingOf(line){
+  const t=line.trim();
+  if(/^abstract\s*[:.\-—–]\s*\S/i.test(t)) return {key:'abstract',rest:t.replace(/^abstract\s*[:.\-—–]\s*/i,'')};
+  if(/^a ?b ?s ?t ?r ?a ?c ?t$/i.test(t)) return {key:'abstract',rest:''};
+  if(/^keywords?\s*[:.]/i.test(t)) return {key:'keywords',rest:t.replace(/^keywords?\s*[:.]\s*/i,'')};
+  const m=t.match(/^(?:(\d{1,2}(?:\.\d{1,2})*)\.?\s+)?([A-Z][A-Za-z ,&\-–:’']{2,80})$/);
+  if(!m) return null;
+  const name=m[2].trim();if(name.split(/\s+/).length>9) return null;
+  const sub=m[1]&&m[1].includes('.')&&/\d\.\d/.test(m[1]);
+  if(!m[1]&&!/^(abstract|introduction|references|bibliography|conclusions?|discussion|results|findings|methodology|methods|research method(ology)?|limitations?.*|literature review.*|conclusions? and .*|discussion and .*)$/i.test(name)) return null;
+  for(const [k,re] of SECKEYS) if(re.test(name)) return (sub&&k!=='limitations')?null:{key:k,rest:''};
+  return sub?null:{key:'other',rest:''};
+}
+const clipQ=s=>{const w=String(s).split(/\s+/);return w.length>40?w.slice(0,40).join(' '):s};
+const mk=(value,sent,o={})=>({value:value||NA,page:value&&sent?String(sent.p):'',quote:value&&sent?clipQ(sent.s):'',flag:o.flag||'',note:o.note||''});
+const countRe=(text,re)=>(text.match(new RegExp(re.source,re.flags.includes('g')?re.flags:re.flags+'g'))||[]).length;
+const cap=s=>s?s.charAt(0).toUpperCase()+s.slice(1):s;
+async function crossref(doi){
+  const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),12000);
+  try{const r=await fetch('https://api.crossref.org/works/'+encodeURIComponent(doi),{signal:ctl.signal});if(!r.ok)return null;return (await r.json()).message||null}
+  catch{return null}finally{clearTimeout(t)}
+}
+const crYear=m=>((m.published||m['published-print']||m['published-online']||m.issued)?.['date-parts']||[[null]])[0][0];
+const stripTags=s=>String(s||'').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();
+function apaFromCR(m){
+  const au=(m.author||[]).map(a=>a.family?`${a.family}, ${(a.given||'').split(/[\s.]+/).filter(Boolean).map(x=>x.split('-').map(y=>y[0].toUpperCase()+'.').join('-')).join(' ')}`.replace(/,\s*$/,''):a.name).filter(Boolean);
+  const as=au.length<=1?au.join(''):au.length<=20?au.slice(0,-1).join(', ')+', & '+au.at(-1):au.slice(0,19).join(', ')+', … '+au.at(-1);
+  const title=stripTags((m.title||[''])[0]);let src=stripTags((m['container-title']||[''])[0]);
+  if(m.volume) src+=`, ${m.volume}`;if(m.issue) src+=`(${m.issue})`;
+  const pg=m.page||m['article-number'];if(pg) src+=`, ${String(pg).replace('-','–')}`;
+  return `${as} (${crYear(m)||'n.d.'}). ${title}${/[.?!]$/.test(title)?'':'.'} ${src}. https://doi.org/${m.DOI}`;
+}
+function authorYearCR(m){
+  const f=(m.author||[]).map(a=>a.family||a.name).filter(Boolean),y=crYear(m)||'n.d.';
+  return f.length===0?'':f.length===1?`${f[0]} (${y})`:f.length===2?`${f[0]} & ${f[1]} (${y})`:`${f[0]} et al. (${y})`;
+}
+function guessTitle(items){
+  const g=new Map();
+  for(const it of items){if(!it.s.trim())continue;const k=Math.round(it.h*2)/2;if(!g.has(k))g.set(k,[]);g.get(k).push(it.s)}
+  const c=[...g.entries()].map(([h,a])=>({h,t:a.join(' ').replace(/\s+/g,' ').trim()}))
+    .filter(x=>x.t.split(' ').length>=3&&x.t.length>=20&&x.t.length<=320).sort((a,b)=>b.h-a.h);
+  return (c[0]?.t||'').replace(/^(research )?article\s+/i,'');
+}
+function parseHyp(stmts){
+  const iv=[],dv=[],med=[],mod=[];const clean=s=>cap(s.replace(/^(there (is|are|exists?)\s+)?(an?\s+|the\s+)?/i,'').replace(/\s+/g,' ').replace(/[,;:]+$/,'').trim()).slice(0,70);
+  for(const s of stmts){
+    let m=s.match(/^(.{3,80}?)\s+(?:positively |negatively |significantly |partially |fully )?mediates?\s+the\s+(?:relationship|effect|link|association|influence|impact)\s+(?:between|of)\s+(.{3,80}?)\s+(?:and|on)\s+(.{3,80}?)(?:[.;]|$)/i);
+    if(m){med.push(clean(m[1]));iv.push(clean(m[2]));dv.push(clean(m[3]));continue}
+    m=s.match(/^(.{3,80}?)\s+(?:positively |negatively |significantly )?moderates?\s+the\s+(?:relationship|effect|link|association|influence|impact)\s+(?:between|of)\s+(.{3,80}?)\s+(?:and|on)\s+(.{3,80}?)(?:[.;]|$)/i);
+    if(m){mod.push(clean(m[1]));iv.push(clean(m[2]));dv.push(clean(m[3]));continue}
+    m=s.match(/^(.{3,90}?)\s+(?:has|have|will have|exerts?|is|are|significantly|positively|negatively|directly)?\s*(?:an?\s+)?(?:(?:statistically\s+)?significant(?:ly)?\s+|positive(?:ly)?\s+|negative(?:ly)?\s+|direct(?:ly)?\s+|and\s+)*(?:effect|influence|impact|relationship|association|affects?|influences?|impacts?|predicts?|relates?|related|associated|correlated|determinants?|contributes?|leads?|enhances?|increases?|reduces?|drives?)\s+(?:on|with|to|of)?\s*(.{3,90}?)(?:[.;]|$| among| in | for | of )/i);
+    if(m){iv.push(clean(m[1]));dv.push(clean(m[2]))}
+  }
+  const uniq=a=>{const seen=new Set();return a.filter(x=>x&&!seen.has(x.toLowerCase())&&seen.add(x.toLowerCase()))};
+  const dvU=uniq(dv),ivU=uniq(iv);const low=new Set(ivU.map(x=>x.toLowerCase()));
+  const medU=uniq([...med,...dvU.filter(x=>low.has(x.toLowerCase()))]);const medL=new Set(medU.map(x=>x.toLowerCase()));const modU=uniq(mod);const modL=new Set(modU.map(x=>x.toLowerCase()));
+  return {iv:ivU.filter(x=>!medL.has(x.toLowerCase())&&!modL.has(x.toLowerCase())),dv:dvU.filter(x=>!medL.has(x.toLowerCase())),med:medU,mod:modU};
+}
+const DATA_SRC=[['Datastream',/Datastream/i],['Compustat',/Compustat/i],['Bloomberg',/Bloomberg/i],['Refinitiv / Thomson Reuters (Eikon)',/Refinitiv|Thomson Reuters|\bEikon\b/i],
+ ['Orbis / Osiris',/\bOrbis\b|\bOsiris\b/i],['WRDS',/\bWRDS\b/],['CSMAR',/CSMAR/],['BoardEx',/BoardEx/i],['FiinPro / Vietstock',/FiinPro|Vietstock|StoxPlus/i],
+ ['Báo cáo thường niên (annual reports)',/annual reports?/i],['Báo cáo tài chính (financial statements)',/financial statements/i]];
+// Tìm kết quả kiểm định (Supported / Not supported, β, t, p) cho từng giả thuyết
+function hypResults(hyp,lines,sents){
+  const NEG=/\b(not\s+supported|unsupported|rejected|not\s+confirmed|not\s+accepted|insignificant|not\s+significant|non-significant)\b/i,POS=/\b(supported|accepted|confirmed)\b/i,PART=/partial(ly)?\s+supported/i;
+  const labRe=k=>new RegExp('(^|[^A-Za-z0-9])'+k+'(?![0-9a-z])','i');
+  const decOf=(txt,k)=>{
+    const i=txt.search(labRe(k));const win=i>=0?txt.slice(i,i+90):txt;
+    const t=NEG.test(win)||POS.test(win)?win:txt;
+    if(PART.test(t)) return {dec:'Ủng hộ một phần (Partially supported)',decShort:'ủng hộ một phần',neg:false};
+    if(NEG.test(t)&&(!POS.test(t)||t.search(NEG)<=t.search(POS))) return {dec:'Bác bỏ (Not supported)',decShort:'bác bỏ / không có ý nghĩa',neg:true};
+    if(POS.test(t)) return {dec:'Ủng hộ (Supported)',decShort:'ủng hộ',neg:false};
+    return null;
+  };
+  const out={};
+  for(const h of hyp){
+    const re=labRe(h.k);let best=null;
+    for(const l of lines){
+      if(l.t.length>400||!re.test(l.t)||!(NEG.test(l.t)||POS.test(l.t))) continue;
+      const labs=l.t.match(/\bH\d{1,2}[a-z]?\b/gi)||[];
+      const nums=l.t.match(/[−–-]?\d*\.\d+/g)||[];
+      if(labs.length>2||nums.length<1) continue;
+      const sc=nums.length;if(!best||sc>best.sc) best={l,sc};
+    }
+    if(best){
+      const t=best.l.t,d=decOf(t,h.k);
+      const di=Math.min(...[t.search(NEG),t.search(POS)].filter(x=>x>=0));
+      const before=t.slice(0,di).replace(re,' ');
+      const raw=(before.match(/[−–-]?\d*\.\d+/g)||[]).map(x=>x.replace(/[−–]/,'-'));
+      const nums=raw.map(parseFloat);
+      const stars=(before.match(/\*+/)||[''])[0];
+      const pm=before.match(/([A-Za-z][\w&.’' ]{0,40}?)\s*(?:->|→|–>|—>|=>|- >|➔)\s*([A-Za-z][\w&.’' ]{0,40}?)(?=\s+[−–-]?\d|\s*$)/);
+      let bi=null,ti=null,pi=null;
+      if(nums.length){bi=0;
+        const r=nums.slice(1).map((v,i)=>({v,i:i+1}));
+        const big=r.find(x=>Math.abs(x.v)>1);
+        if(big){ti=big.i;const pc=r.filter(x=>x.i>ti&&x.v>=0&&x.v<=1);if(pc.length)pi=pc[0].i}
+        else if(r.length>=2){ti=r[0].i;pi=r[1].i}        // dạng β, t, p (t < 1)
+        else if(r.length===1&&r[0].v<=1){pi=r[0].i}
+      }
+      const beta=bi!=null?nums[bi]:null,tv=ti!=null?nums[ti]:null,pv=pi!=null?nums[pi]:null;
+      const fmt=i=>raw[i].replace('-','−');
+      const stats=[bi!=null&&`β = ${fmt(bi)}`,ti!=null&&`t = ${fmt(ti)}`,pi!=null&&`p = ${fmt(pi)}${stars?' '+stars:''}`].filter(Boolean).join('; ');
+      let warn='';
+      if(tv!=null&&pv!=null){if(Math.abs(tv)<1.645&&pv<0.05) warn=`t = ${fmt(ti)} quá nhỏ so với p = ${fmt(pi)} — số liệu trong bảng mâu thuẫn`;
+        else if(Math.abs(tv)>=1.96&&pv>0.10) warn=`t = ${fmt(ti)} lớn nhưng p = ${fmt(pi)} — số liệu trong bảng mâu thuẫn`}
+      if(!warn&&d&&!d.neg&&pv!=null&&pv>0.10) warn=`ghi “supported” nhưng p = ${fmt(pi)} > 0,10`;
+      out[h.k]={...(d||{dec:'Có số liệu, chưa rõ kết luận',decShort:'chưa rõ',neg:false}),beta,stats,warn,
+        dir:beta==null?'':beta>0?'cùng chiều (+)':beta<0?'ngược chiều (−)':'',
+        path:pm?`${pm[1].trim()} → ${pm[2].trim()}`:'',src:{s:t,p:best.l.p}};
+      continue;
+    }
+    const x=sents.find(x=>re.test(x.s)&&(NEG.test(x.s)||POS.test(x.s))&&!/\b(we|this study) (hypothesi[sz]e|propose|expect)/i.test(x.s)&&x.s!==h.s);
+    if(x){const d=decOf(x.s,h.k);if(d) out[h.k]={...d,beta:null,stats:'',dir:'',path:'',src:x}}
+  }
+  const all=sents.find(x=>/\ball (the |of the )?(proposed |five |four |three |six |seven )?hypotheses\b.{0,40}\b(were|are)\s+(fully\s+|all\s+)?(supported|accepted|confirmed)/i.test(x.s));
+  if(all) for(const h of hyp) if(!out[h.k]) out[h.k]={dec:'Ủng hộ (Supported)',decShort:'ủng hộ',neg:false,beta:null,stats:'',dir:'',path:'',src:all};
+  return out;
+}
+async function ruleExtract(pages,p1,useCrossref){
+  const lines=[];pages.forEach((t,i)=>t.split('\n').forEach(l=>{l=l.replace(/\s+/g,' ').trim();if(l)lines.push({t:l,p:i+1})}));
+  const sec={},body=[];let cur='front';
+  for(const l of lines){
+    const h=headingOf(l.t);
+    if(h){cur=h.key;sec[cur]=sec[cur]||[];if(h.rest){sec[cur].push({t:h.rest,p:l.p});if(cur!=='references')body.push({t:h.rest,p:l.p})}if(cur==='keywords')cur='front';continue}
+    (sec[cur]=sec[cur]||[]).push(l);if(cur!=='references')body.push(l);
+  }
+  const S_=k=>toSentences(sec[k]||[]);
+  const bodyS=toSentences(body),bodyText=bodyS.map(x=>x.s).join(' ');
+  let abs=S_('abstract');if(!abs.length) abs=toSentences(sec.front||[]).filter(x=>x.s.split(' ').length>=15).slice(0,8);
+  const absText=abs.map(x=>x.s).join(' ');
+  const methS=S_('method').length?S_('method'):bodyS,methText=methS.map(x=>x.s).join(' ');
+  const find=(arr,re,n=1)=>arr.filter(x=>re.test(x.s)).slice(0,n);
+  const R={};const anomalies=[];
+
+  // DOI + Crossref
+  const doiRe=/\b10\.\d{4,9}\/[^\s"<>,;]+/;let doi=null,doiP=0;
+  for(let i=0;i<Math.min(2,pages.length)&&!doi;i++){const m=pages[i].match(doiRe);if(m){doi=m[0];doiP=i+1}}
+  if(!doi){for(const l of body){const m=l.t.match(doiRe);if(m){doi=m[0];doiP=l.p;break}}}
+  if(doi) doi=doi.replace(/[.)\]]+$/,'');
+  const cr=doi&&useCrossref?await crossref(doi):null;
+  const crNote=cr?`Nguồn: Crossref (DOI ${doi})`:'';
+  if(!doi) anomalies.push('Không tìm thấy DOI trong bài');
+  else if(useCrossref&&!cr) anomalies.push('DOI không tra được trên Crossref — kiểm tra lại DOI');
+
+  // Thông tin thư mục
+  const p1t=pages[0]||'';
+  const fontTitle=guessTitle(p1);
+  const crTitle=cr?stripTags((cr.title||[''])[0]):'';
+  R.title=crTitle?{value:crTitle,page:'1',quote:crTitle,flag:'',note:crNote}:mk(fontTitle,fontTitle&&{s:fontTitle,p:1},{note:'Đoán theo cỡ chữ lớn nhất trang 1 — cần kiểm tra',flag:'unclear'});
+  if(crTitle&&fontTitle&&quoteScore(norm(crTitle),norm(fontTitle))<0.5&&quoteScore(norm(fontTitle),norm(crTitle))<0.5) anomalies.push('Tiêu đề trong PDF khác tiêu đề trên Crossref — có thể DOI không đúng bài');
+  const T=R.title.value!==NA?R.title.value:'';
+  R.short_title={value:T?(T.split(/[:?]/)[0].split(/\s+/).length<=10?T.split(/[:?]/)[0].trim():T.split(/\s+/).slice(0,8).join(' ')+'…'):NA,page:'',quote:''};
+  let jr=cr?stripTags((cr['container-title']||[''])[0]):'';let jS=null;
+  if(!jr){let m=p1t.match(/\b([A-Z][A-Za-z&\- ]{2,50}?)\s+((?:19|20)\d{2})\s*,\s*\d+\s*,\s*\d+/);if(m){jr=m[1].trim()}
+    else{m=p1t.match(/((?:International |European |Asian |American |British |Australian )?Journal of [A-Z][\w&,\- ]{3,80}?)(?=\s{2}|\n|,|\d|$)/);if(m)jr=m[1].trim()}
+    if(jr) jS={s:jr,p:1}}
+  R.journal=cr&&jr?{value:jr,page:'',quote:'',note:crNote}:mk(jr,jS);
+  let yr=cr?crYear(cr):null,yS=null;
+  if(!yr){const m=p1t.match(/(?:Published|Available online|Accepted)[^\n]{0,40}?((?:19|20)\d{2})/i)||p1t.match(/(?:©|Copyright)\s*((?:19|20)\d{2})/i)||p1t.match(/\b[A-Z][A-Za-z&\- ]{2,50}?\s+((?:19|20)\d{2})\s*,\s*\d+\s*,\s*\d+/);if(m){yr=m[1];yS={s:m[0].trim(),p:1}}}
+  R.year=cr&&yr?{value:String(yr),page:'',quote:'',note:crNote}:mk(yr&&String(yr),yS);
+  const ay=cr?authorYearCR(cr):'';
+  R.author_year=ay?{value:ay,page:'',quote:'',note:crNote}:{value:NA,page:'',quote:'',note:''};
+  if(!ay) R.author_year.flag='unclear';
+  let pub=cr?.publisher||'',pS=null;
+  if(!pub){let best=null;for(const [n,re] of PUBLISHERS){const c=countRe(p1t,re)*5+countRe(bodyText,re);if(c&&(!best||c>best[1]))best=[n,c]}
+    if(best){pub=best[0];const l=lines.find(l=>PUBLISHERS.find(x=>x[0]===pub)[1].test(l.t));if(l)pS={s:l.t,p:l.p}}}
+  R.publisher=cr&&pub?{value:pub,page:'',quote:'',note:crNote}:mk(pub,pS);
+  const land=cr?.resource?.primary?.URL||'';
+  let url=land;if(!url){const m=p1t.match(/https?:\/\/(?!doi\.org|dx\.doi|creativecommons|orcid)[^\s)]+/i);if(m)url=m[0].replace(/[.,;]+$/,'')}
+  R.cite_link={value:url||NA,page:land?'':url?'1':'',quote:land?'':url||'',note:land?crNote:''};
+  R.apa=cr?{value:apaFromCR(cr),page:'',quote:'',note:crNote}:{value:NA,page:'',quote:'',flag:'unclear',note:'Cần DOI + Crossref để tạo APA tự động'};
+  R.doi=doi?{value:'https://doi.org/'+doi,page:String(doiP),quote:doi}:{value:NA,page:'',quote:''};
+
+  // Thiết kế nghiên cứu
+  let tech=ANALYSIS.filter(([,re])=>re.test(methText)||re.test(absText)).map(x=>x[0]);
+  if(tech.some(t=>/PLS-SEM|CB-SEM/.test(t))) tech=tech.filter(t=>t!=='SEM');
+  const coll=COLLECT.filter(([,re])=>countRe(methText+' '+absText,re)>=1).map(x=>x[0]);
+  const samp=SAMPLING.filter(([,re])=>re.test(methText)).map(x=>x[0]);
+  const quant=/questionnaire|survey|regression|SEM|PLS|statistic|panel data/i.test(methText+absText),qual=/interview|thematic|focus group|case stud|qualitative/i.test(methText+absText);
+  const approach=/mixed[- ]method/i.test(methText+absText)||(quant&&qual&&/interview/i.test(methText))?'Hỗn hợp (mixed methods)':quant?'Định lượng (quantitative)':qual?'Định tính (qualitative)':'';
+  const nRe=/\b(\d{1,3}(?:,\d{3})+|\d{2,6})\s+(?:valid |usable |useable |complete(?:d)? |final |effective |returned |eligible )?(?:questionnaires?|questionnaire copies|respondents|responses|participants|employees|students|firms|SMEs|companies|observations|consumers|customers|managers|owners|taxpayers|interviewees|users|households|banks|hotels|farmers|nurses|teachers)/gi;
+  const nums=[...new Set([...(methText+' '+absText).matchAll(nRe)].map(m=>m[1]))].filter(x=>+x.replace(/,/g,'')>=30).slice(0,4);
+  const nS=find(methS,new RegExp(nRe.source,'i'))[0]||find(abs,new RegExp(nRe.source,'i'))[0];
+  const mt=methText+' '+absText;
+  const src=DATA_SRC.filter(([,re])=>re.test(mt)).map(x=>x[0]);
+  const ex=mt.match(/\b((?:[A-Z][a-z]+ ){1,3}(?:Stock|Securities) Exchange)(?:\s*\(([A-Z]{2,6})\))?/);if(ex) src.unshift(ex[1].trim()+(ex[2]?` (${ex[2]})`:''));
+  let period='';for(const m of mt.matchAll(/\b((?:19|20)\d{2})\s*(?:–|-|—|to|until|through|and)\s*((?:19|20)\d{2})\b/g)){if(+m[2]>+m[1]&&+m[2]-+m[1]<=40){period=`${m[1]}–${m[2]}`;break}}
+  const obs=(mt.match(/\b(\d{1,3}(?:,\d{3})+|\d{2,6})\s+(?:firm[- ]year |bank[- ]year |company[- ]year |country[- ]year )?observations/i)||[])[0];
+  const dParts=[approach,(coll.length||src.length)&&'Dữ liệu: '+[...coll,...src].join('; '),period&&'Giai đoạn: '+period,obs&&'Quan sát: '+obs,nums.length&&'Cỡ mẫu (số trong bài): '+nums.join('; '),samp.length&&'Chọn mẫu: '+samp.join(', '),tech.length&&'Phương pháp ước lượng: '+tech.join(', ')].filter(Boolean);
+  R.design=mk(dParts.join('\n'),nS||find(methS,/questionnaire|survey|interview|sample|data were|data was|observations/i)[0]||abs[0]);
+
+  // Bối cảnh
+  const ctxText=absText+' '+methText;
+  // bỏ trường hợp tên nước là tên tác giả được trích dẫn, vd "Israel (1992)", "Israel 1992", "Israel et al."
+  const ctry=COUNTRIES.map(c=>[c,countRe(ctxText,new RegExp('\\b'+c.replace(/ /g,'\\s')+'\\b(?!\\s*(?:et al|and [A-Z]|&|,?\\s*\\(?(?:19|20)\\d{2}))'))+countRe(T,new RegExp('\\b'+c+'\\b'))*3]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]);
+  const demo={Jordanian:'Jordan',Vietnamese:'Vietnam',Malaysian:'Malaysia',Indonesian:'Indonesia',Chinese:'China',Indian:'India',Saudi:'Saudi Arabia',Pakistani:'Pakistan',Nigerian:'Nigeria',Ghanaian:'Ghana',Thai:'Thailand',Korean:'Korea',Egyptian:'Egypt',Turkish:'Turkey',Iranian:'Iran',Bangladeshi:'Bangladesh',Emirati:'UAE',Spanish:'Spain',Italian:'Italy',German:'Germany',Polish:'Poland',Portuguese:'Portugal',Brazilian:'Brazil'};
+  if(!ctry.length) for(const [d,c] of Object.entries(demo)){const n=countRe(ctxText+' '+T,new RegExp('\\b'+d+'\\b'));if(n)ctry.push([c,n])}
+  const ctrs=ctry.slice(0,2).map(x=>x[0]);
+  const secs=SECTORS.map(([n,re])=>[n,countRe(ctxText+' '+T,re)]).filter(x=>x[1]>=2).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]);
+  const cS=ctrs.length?find(abs.concat(methS),new RegExp('\\b('+ctrs.map(c=>c.replace(/ /g,'\\s')).join('|')+'|'+Object.keys(demo).join('|')+')\\b'))[0]:null;
+  R.context=mk([ctrs.length&&'Quốc gia: '+ctrs.join(', '),secs.length&&'Lĩnh vực/đối tượng: '+secs.join(', ')].filter(Boolean).join('; '),cS||abs[0]);
+
+  // Lý thuyết
+  const th=THEORIES.map(([n,re])=>[n,countRe(bodyText,re),re]).filter(x=>x[1]>=2||(x[1]>=1&&x[2].test(absText))).sort((a,b)=>b[1]-a[1]);
+  const extra=[...bodyText.matchAll(/\b((?:[A-Z][a-z]+[- ]){1,4})[Tt]heory\b/g)].map(m=>(m[1]+'Theory').trim()).filter(x=>!/^(This|The|That|These|Our|Its|Such|A|An|Grounded|In|Of|Further|Existing|Previous|Current) /.test(x));
+  const exC={};extra.forEach(x=>exC[x]=(exC[x]||0)+1);
+  const exList=Object.entries(exC).filter(([n,c])=>c>=3&&!th.some(t=>t[2].test(n))).map(x=>x[0]);
+  const theories=[...th.map(x=>x[0]),...exList].slice(0,5);
+  R.theory=mk(theories.map(n=>THEORY_VI[n]?`${THEORY_VI[n]} – ${n}`:n).join('\n'),theories.length?find(abs.concat(bodyS),th[0]?.[2]||new RegExp(exList[0]))[0]:null);
+
+  // Giả thuyết → mô hình & biến
+  const hyp=[];const seen=new Set();
+  for(const x of bodyS){
+    const m=x.s.match(/\bHypothesis\s+\d{1,2}[a-z]?\s*\(\s*(H\d{1,2}[a-z]?)\s*\)\s*[:.]?\s*([A-Z][^]*?)$/i)
+      ||x.s.match(/\b(H\d{1,2}[a-z]?)\s*[:.)]{1,2}\s*([A-Z][^]*?)$/)
+      ||x.s.match(/\bHypothesis\s+(\d{1,2}[a-z]?)\s*[:.)]?\s*([A-Z][^]*?)$/i);
+    if(m){const k=m[1].toUpperCase().replace(/^(\d)/,'H$1');if(!seen.has(k)&&m[2].split(' ').length>=4){seen.add(k);hyp.push({k,t:m[2].trim(),p:x.p,s:x.s})}}
+  }
+  const hv=parseHyp(hyp.map(h=>h.t));
+  const vNote='Trích tự động từ giả thuyết — cần kiểm tra';
+  // Kết quả kiểm định từng giả thuyết
+  const HR=hypResults(hyp,body,bodyS);
+  hyp.forEach(h=>{const one=parseHyp([h.t]);h.x=one.med[0]&&one.iv[0]?one.iv[0]:(one.iv[0]||'');h.y=one.dv[0]||'';h.med=one.med[0]||'';h.mod=one.mod[0]||'';
+    h.sign=/\b(negative(ly)?|reduc|decreas|lower|mitigat|curb|weaken)/i.test(h.t)?'(−)':/\b(positive(ly)?|increas|enhanc|higher|strengthen|improv|promot)/i.test(h.t)?'(+)':''});
+  const pathOf=h=>{const r=HR[h.k];if(r?.path)return r.path;if(h.mod)return `${h.mod} điều tiết ${h.x||'?'} → ${h.y||'?'}`;if(h.med)return `${h.x||'?'} → ${h.med} → ${h.y||'?'}`;return h.x&&h.y?`${h.x} → ${h.y}`:''};
+  const decTxt=r=>!r?'Chưa tìm thấy kết quả kiểm định — cần kiểm tra':[r.dec,r.stats,r.dir].filter(Boolean).join(' · ');
+  R.hypotheses=hyp.length?mk(hyp.slice(0,20).map(h=>`${h.k}: “${trunc(h.t,320)}”\n   → ${decTxt(HR[h.k])}`).join('\n'),{s:hyp[0].s,p:hyp[0].p},{flag:hyp.some(h=>!HR[h.k])?'unclear':''}):mk('');
+  const eqs=[...new Set(body.filter(l=>l.t.length<320&&/=/.test(l.t)&&/\+/.test(l.t)&&/[βαε]|\bbeta\b|\balpha\b/i.test(l.t)&&!/[<>≤≥]\s*0?\.\d|\b[tpβ]\s*=\s*[−–-]?\d*\.\d/i.test(l.t)).map(l=>l.t))].slice(0,4);
+  // giải nghĩa chữ viết tắt trong bảng kết quả, vd "AT" → "Attitude towards behavior (AT)"
+  const abbr=a=>{if(!/^[A-Z][A-Z0-9_]{0,7}$/.test(a))return a;
+    const c={};for(const x of bodyText.matchAll(new RegExp('([A-Za-z][A-Za-z\\-’\' ]{2,60}?)\\s*\\(\\s*'+a+'\\s*\\)','g'))){
+      const w=x[1].trim().split(/\s+/).slice(-5);let i=w.length;while(i>0&&!/^[A-Z]{2,}$/.test(w[i-1]))i--;
+      const ph=w.slice(i).join(' ').replace(/^(the|of|and|on|to|in|a|an|that|while|both)\s+/i,'').toLowerCase();if(ph.length>2)c[ph]=(c[ph]||0)+1}
+    const best=Object.entries(c).sort((x,y)=>y[1]-x[1])[0];return best?`${cap(best[0])} (${a})`:a};
+  Object.values(HR).forEach(r=>{if(r.path){r.path=r.path.split(' → ').map(x=>abbr(x.trim())).join(' → ')}});
+  const paths=hyp.slice(0,20).map(h=>{const pth=pathOf(h);return pth?`${h.k}: ${pth} ${h.sign}`.trim():''}).filter(Boolean);
+  const eqL=eqs.length&&body.find(l=>l.t===eqs[0]);
+  R.model=mk([eqs.length&&'Phương trình:\n'+eqs.join('\n'),paths.length&&'Quan hệ giả thuyết:\n'+paths.join('\n')].filter(Boolean).join('\n'),eqL?{s:eqL.t,p:eqL.p}:hyp[0]&&{s:hyp[0].s,p:hyp[0].p},paths.length&&!eqs.length?{flag:'unclear',note:vNote}:{});
+  // Câu hỏi nghiên cứu
+  const rqS=bodyS.filter(x=>/\bRQ\s?\d/.test(x.s)||(/\?$/.test(x.s)&&x.s.split(' ').length>=6&&/\b(how|what|whether|does|do|is|are|which|to what extent|can)\b/i.test(x.s)&&x.p<=Math.ceil(pages.length/2))).slice(0,5);
+  const objS=find(abs.concat(S_('intro')),/\b(this (study|paper|research|article) (aims?|seeks?|attempts?|investigates?|examines?|explores?|analy[sz]es)|the (main )?(aim|purpose|objective|goal)s? of (this|the present|the current) (study|paper|research)|we (examine|investigate|explore|analy[sz]e)|(study|paper) (aimed|sought) to)/i)[0];
+  R.rq=rqS.length?mk(rqS.map(x=>'• '+x.s).join('\n'),rqS[0]):objS?mk('Bài không nêu câu hỏi NC riêng. Mục tiêu nghiên cứu: '+objS.s,objS):mk('');
+  const kwLine=(sec.keywords||[]).map(l=>l.t).join(' ');
+  const hS=hyp[0]&&{s:hyp[0].s,p:hyp[0].p};
+  R.iv=hv.iv.length?mk(hv.iv.join('; '),hS,{flag:'unclear',note:vNote}):kwLine?mk('Từ khóa của bài: '+kwLine,{s:kwLine,p:(sec.keywords[0]||{}).p||1},{flag:'unclear',note:'Không tìm được giả thuyết dạng H1, H2… — đây là từ khóa của bài, cần tự xác định biến'}):mk('');
+  R.dv=hv.dv.length?mk(hv.dv.join('; '),hS,{flag:'unclear',note:vNote}):mk('');
+  R.med=hv.med.length?mk(hv.med.join('; '),find(bodyS,/mediat/i)[0]||hS,{flag:'unclear',note:vNote}):(/mediat(es|ing|ion|or)/i.test(bodyText)?mk('Bài có nhắc đến biến trung gian (mediation) — cần xác định',find(bodyS,/mediat(es|ing|ion|or)/i)[0],{flag:'unclear'}):mk(''));
+  R.mod=hv.mod.length?mk(hv.mod.join('; '),find(bodyS,/moderat/i)[0]||hS,{flag:'unclear',note:vNote}):(/moderat(es|ing|ion|or)\b/i.test(bodyText)?mk('Bài có nhắc đến biến điều tiết (moderation) — cần xác định',find(bodyS,/moderat(es|ing|ion|or)\b/i)[0],{flag:'unclear'}):mk(''));
+  const ctlS=find(bodyS,/control variables?|controlled for|as controls?\b/i)[0];
+  R.ctrl=ctlS?mk(trunc(ctlS.s,300),ctlS,{flag:'unclear',note:'Câu trong bài có nhắc biến kiểm soát — cần rút gọn'}):mk('');
+
+  // Kết quả, thang đo, kết luận, hạn chế
+  const fAbs=find(abs,/\b(result|finding|found|reveal|show|indicat|confirm|suggest|significant|support|evidence)/i,3);
+  const resS=S_('results').concat(S_('discussion'));
+  const fRes=find(resS,/\b(not supported|supported|rejected|accepted)\b/i,3);
+  const fAll=[...fAbs,...fRes.filter(x=>!fAbs.includes(x))].slice(0,5);
+  const hypLines=hyp.filter(h=>HR[h.k]).map(h=>{const r=HR[h.k],pth=pathOf(h);return `${h.k}${pth?` (${pth})`:''}: ${r.decShort}${r.dir?', '+r.dir:''}${r.stats?` (${r.stats})`:''}`});
+  const firstRow=hyp.map(h=>HR[h.k]?.src).find(Boolean);
+  R.findings=hypLines.length
+    ?mk([...hypLines,fAbs[0]&&'Tóm tắt của tác giả: '+fAbs[0].s].filter(Boolean).join('\n'),firstRow||fAbs[0])
+    :mk(fAll.map(x=>'• '+x.s).join('\n'),fAll[0]);
+  const lik=(bodyText.match(/\b(\d|five|seven|six|four|ten)[- ]point\b/i)||[])[1];
+  const scS=find(methS,/likert|\b(\d|five|seven)[- ]point|adopted from|adapted from|measured (using|with|by)|items? (were|was) (adopted|adapted|used)|measurement items/i,3);
+  R.scales=mk([lik&&`Likert ${({five:5,seven:7,six:6,four:4,ten:10})[lik.toLowerCase()]||lik} điểm`,...scS.map(x=>'• '+x.s)].filter(Boolean).join('\n'),scS[0]);
+  const conS=S_('conclusion').length?S_('conclusion'):S_('discussion').slice(-6);
+  const con=conS.slice(0,3);
+  R.conclusion=mk(con.map(x=>x.s).join(' '),con[0]);
+  const limAll=S_('limitations'),li=limAll.findIndex(x=>/limitation|future (research|studies|study|scholars|authors)/i.test(x.s));
+  let limS=limAll.slice(li>=0?li:0,(li>=0?li:0)+4);if(!limS.length) limS=find(bodyS,/limitation|future (research|studies|study)/i,3);
+  R.limitations=mk(limS.map(x=>'• '+x.s).join('\n'),limS[0]);
+
+  // Điểm bất thường (quy tắc)
+  if(/retract(ed|ion)/i.test(pages.join(' ').slice(0,20000))) anomalies.push('Có từ “retracted/retraction” — kiểm tra bài có bị rút không');
+  if(!S_('limitations').length&&!limS.length) anomalies.push('Không thấy phần hạn chế nghiên cứu');
+  if(!hyp.length&&quant) anomalies.push('Nghiên cứu định lượng nhưng không tìm thấy giả thuyết dạng H1, H2…');
+  if(nums.length>=2) anomalies.push('Bài nêu nhiều con số cỡ mẫu khác nhau ('+nums.join(', ')+') — kiểm tra cỡ mẫu cuối cùng');
+  const noRes=hyp.filter(h=>!HR[h.k]).map(h=>h.k);if(noRes.length) anomalies.push('Không tìm thấy kết quả kiểm định cho: '+noRes.join(', ')+' — đọc bảng kết quả để bổ sung');
+  const rej=hyp.filter(h=>HR[h.k]?.neg).map(h=>h.k);if(rej.length) anomalies.push('Giả thuyết bị bác bỏ / không có ý nghĩa: '+rej.join(', '));
+  hyp.forEach(h=>{if(HR[h.k]?.warn) anomalies.push(`${h.k}: ${HR[h.k].warn}`)});
+  const mis=hyp.filter(h=>{const r=HR[h.k];return r&&r.beta!=null&&h.sign&&!r.neg&&((h.sign==='(+)'&&r.beta<0)||(h.sign==='(−)'&&r.beta>0))}).map(h=>h.k);
+  if(mis.length) anomalies.push('Dấu hệ số ngược với chiều giả thuyết nhưng vẫn ghi “ủng hộ”: '+mis.join(', ')+' — kiểm tra lại');
+  anomalies.unshift('[Mức đọc: toàn văn PDF, trích tự động — không dùng AI]');
+  R.anomalies={value:anomalies.length>1?anomalies.map((a,i)=>i?'• '+a:a).join('\n'):anomalies[0]+'\nKhông phát hiện điểm bất thường theo quy tắc tự động.',page:'',quote:'',flag:anomalies.length>1?'anomalous':''};
+  R.summary=trunc(absText,1600)+(kwLine?`\n\nTừ khóa: ${kwLine}`:'');
+  return R;
+}
+
 async function analyzePaper(p){
+  if(S.mode!=='ai') return analyzeRule(p);
   const blob=await downloadPdf(p);
   const pages=await extractPages(await blob.arrayBuffer());
   const npages=pages.map(norm);
@@ -552,18 +933,26 @@ async function analyzePaper(p){
   const ai=await callGemini({system:SYS_EXTRACT,parts,schema:EXTRACT_SCHEMA});
   return {fields:buildFields(ai,p,npages,scanned),summary:String(ai.summary||'').trim(),page_count:pages.length};
 }
+async function analyzeRule(p){
+  const blob=await downloadPdf(p);
+  const {pages,p1}=await extractDocFull(await blob.arrayBuffer());
+  const npages=pages.map(norm);
+  if(npages.join('').length<pages.length*200) throw new AppErr('PDF dạng ảnh (scan) — chế độ không dùng AI không đọc được chữ. Hãy dùng bản PDF có chữ, hoặc bật chế độ AI trong Cài đặt rồi phân tích lại bài này.');
+  const r=await ruleExtract(pages,p1,S.crossref!==false);
+  return {fields:buildFields(r,p,npages,false,'auto'),summary:r.summary,page_count:pages.length};
+}
 
 // ---------- hàng đợi ----------
 async function runQueue(){
   if(Q.running) return;
-  if(!S.geminiKey){Q.paused=true;Q.pauseReason='Chưa có Gemini API key — vào Cài đặt để nhập.';renderQueueBox();return}
+  if(S.mode==='ai'&&!S.geminiKey){Q.paused=true;Q.pauseReason='Chưa có Gemini API key — vào Cài đặt để nhập, hoặc chuyển sang chế độ Không dùng AI.';renderQueueBox();return}
   Q.running=true;Q.paused=false;Q.pauseReason='';clearTimeout(Q.resumeTimer);renderQueueBox();
   try{
     while(!Q.paused){
       const next=sortedPapers().find(p=>p.status==='queued');
       if(!next) break;
       await processPaper(next);
-      if(!Q.paused&&state.papers.some(p=>p.status==='queued')) await sleep(Math.max(0,S.delaySec)*1000);
+      if(!Q.paused&&state.papers.some(p=>p.status==='queued')) await sleep(S.mode==='ai'?Math.max(0,S.delaySec)*1000:50);
     }
   }finally{Q.running=false;Q.current=null;refresh()}
 }
@@ -575,7 +964,7 @@ async function processPaper(p){
     refresh();
     const r=await analyzePaper(getPaper(p.id)||p);
     if(!getPaper(p.id)) return;
-    await patchPaper(p.id,{status:'done',fields:r.fields,summary:r.summary,page_count:r.page_count,ai_model:S.model,analyzed_at:new Date().toISOString(),error:null,overwrite_all:false});
+    await patchPaper(p.id,{status:'done',fields:r.fields,summary:r.summary,page_count:r.page_count,ai_model:S.mode==='ai'?S.model:'Tự động (không AI)',analyzed_at:new Date().toISOString(),error:null,overwrite_all:false});
   }catch(e){
     console.error(e);
     try{
@@ -660,7 +1049,7 @@ function renderDashboard(){
   $('#main').innerHTML=`
   <div class="page-head"><div><h1>Tổng quan</h1><p>Theo dõi tiến trình phân tích và chất lượng dữ liệu.</p></div>
     <a class="btn primary" href="#/upload">${icon('upload')}Tải lên bài báo</a></div>
-  ${!S.geminiKey?`<div class="callout warn">Chưa có <b>Gemini API key</b>. <a href="#/settings">Vào Cài đặt</a> để nhập key miễn phí, sau đó ứng dụng mới phân tích được bài báo.</div>`:''}
+  ${S.mode==='ai'&&!S.geminiKey?`<div class="callout warn">Đang ở chế độ <b>Dùng AI</b> nhưng chưa có Gemini API key. <a href="#/settings">Vào Cài đặt</a> để nhập key, hoặc chuyển sang chế độ Không dùng AI.</div>`:''}
   ${Q.running?`<div class="callout">Đang phân tích hàng đợi. <b>Hãy giữ tab này mở</b> cho đến khi xong; đóng tab thì hàng đợi tạm dừng và chạy tiếp ở lần mở sau.</div>`:''}
   <div class="stats">
     <div class="stat"><b>${c.total}</b><span>Tổng số bài báo</span></div>
@@ -668,10 +1057,10 @@ function renderDashboard(){
     <div class="stat"><b style="color:var(--primary)">${c.queued+c.processing}</b><span>Đang chờ / xử lý</span></div>
     <div class="stat"><b style="color:${c.failed?'var(--danger)':'inherit'}">${c.failed}</b><span>Xử lý lỗi</span></div>
     <div class="stat"><b style="color:${issueFields?'var(--warn)':'inherit'}">${issueFields}</b><span>Trường cần kiểm tra</span></div>
-    <div class="stat"><b>${full}</b><span>Bài đã xác nhận đủ 24 trường</span></div>
+    <div class="stat"><b>${full}</b><span>Bài đã xác nhận đủ ${FIELDS.length} trường</span></div>
   </div>
   <div class="grid2">
-    <div class="card"><h3>Bài cần chú ý</h3>${attention.length?`<div class="list">${attention.map(x=>`<div class="li"><a class="t" href="#/paper/${x.p.id}">${esc(x.p.file_no!=null?x.p.file_no+'. ':'')}${esc(titleOf(x.p))}</a><span class="badge warn">${x.s.issues} cảnh báo</span><span class="badge">${x.s.verified}/24 ✓</span></div>`).join('')}</div>`:'<p class="muted">Không có bài nào bị cảnh báo.</p>'}</div>
+    <div class="card"><h3>Bài cần chú ý</h3>${attention.length?`<div class="list">${attention.map(x=>`<div class="li"><a class="t" href="#/paper/${x.p.id}">${esc(x.p.file_no!=null?x.p.file_no+'. ':'')}${esc(titleOf(x.p))}</a><span class="badge warn">${x.s.issues} cảnh báo</span><span class="badge">${x.s.verified}/${FIELDS.length} ✓</span></div>`).join('')}</div>`:'<p class="muted">Không có bài nào bị cảnh báo.</p>'}</div>
     <div class="card"><h3>File xử lý lỗi</h3>${failed.length?`<div class="list">${failed.slice(0,8).map(p=>`<div class="li"><div class="t"><div class="fname">${esc(p.file_name)}</div><div class="err">${esc(p.error||'')}</div></div><button class="btn xs" data-act="reanalyze" data-id="${p.id}">Thử lại</button></div>`).join('')}</div>${failed.length>1?`<button class="btn sm" style="margin-top:10px" data-act="retryFailed">Thử lại tất cả (${failed.length})</button>`:''}`:'<p class="muted">Không có file lỗi.</p>'}</div>
   </div>
   <div class="grid2">
@@ -724,7 +1113,7 @@ function renderUploadList(){
     <td><div class="fname" title="${esc(p.file_name)}"><a href="#/paper/${p.id}">${esc(p.file_name)}</a></div>${p.status==='failed'?`<div class="err">${esc(p.error||'')}</div>`:''}</td>
     <td>${esc(fv(p,'rank'))||'<span class="badge warn">?</span>'}</td>
     <td class="nowrap">${statusBadge(p)}</td>
-    <td class="nowrap">${p.status==='done'?`<span class="badge ${s.full?'ok':''}">${s.verified}/24 ✓</span> ${s.issues?`<span class="badge warn">${s.issues} ⚠</span>`:''}`:''}</td>
+    <td class="nowrap">${p.status==='done'?`<span class="badge ${s.full?'ok':''}">${s.verified}/${FIELDS.length} ✓</span> ${s.issues?`<span class="badge warn">${s.issues} ⚠</span>`:''}`:''}</td>
     <td class="nowrap muted small">${fmtDate(p.updated_at)}</td>
     <td class="nowrap"><a class="btn xs" href="#/paper/${p.id}">Xem</a> <button class="btn xs" data-act="openPdf" data-id="${p.id}">PDF</button> <button class="btn xs" data-act="reanalyze" data-id="${p.id}" ${p.status==='processing'?'disabled':''}>Phân tích lại</button> <button class="btn xs danger" data-act="deleteOne" data-id="${p.id}" ${p.status==='processing'?'disabled':''}>Xóa</button></td>
   </tr>`}).join('')}</tbody></table>`;
@@ -864,7 +1253,7 @@ function applyFieldFilter(){
 function refreshDetailStatus(){
   const p=getPaper(curRoute().id);if(!p) return;
   const s=paperStats(p),m=$('#dmeta');
-  if(m) m.innerHTML=`${statusBadge(p)}<span class="badge ${s.full?'ok':''}">${s.verified}/24 đã xác nhận</span>${s.issues?`<span class="badge warn">${s.issues} cần kiểm tra</span>`:''}<span>${esc(p.file_name)}</span>${p.page_count?`<span>${p.page_count} trang</span>`:''}${p.analyzed_at?`<span>Phân tích: ${fmtDate(p.analyzed_at)}</span>`:''}`;
+  if(m) m.innerHTML=`${statusBadge(p)}<span class="badge ${s.full?'ok':''}">${s.verified}/${FIELDS.length} đã xác nhận</span>${s.issues?`<span class="badge warn">${s.issues} cần kiểm tra</span>`:''}<span>${esc(p.file_name)}</span>${p.page_count?`<span>${p.page_count} trang</span>`:''}${p.analyzed_at?`<span>Phân tích: ${fmtDate(p.analyzed_at)}</span>`:''}`;
   const d=$('#dstatus');if(!d) return;
   const html=p.status==='queued'?'<div class="callout">Bài đang trong hàng đợi phân tích.</div>'
     :p.status==='processing'?'<div class="callout"><span class="spin"></span> AI đang phân tích bài này… Các trường tạm khóa.</div>'
@@ -930,7 +1319,7 @@ function gotoPdf(page,quote){
 let rzT;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(curRoute().page==='paper')renderV()},200)});
 
 // ---------- Bảng tổng hợp ----------
-function tabsHtml(on){return `<div class="tabs"><a href="#/table" class="${on==='table'?'on':''}">Bảng dữ liệu</a><a href="#/compare" class="${on==='compare'?'on':''}">So sánh bằng AI</a></div>`}
+function tabsHtml(on){return `<div class="tabs"><a href="#/table" class="${on==='table'?'on':''}">Bảng dữ liệu</a><a href="#/compare" class="${on==='compare'?'on':''}">So sánh &amp; Báo cáo</a></div>`}
 function renderTable(){
   const cols=FIELDS;
   $('#main').innerHTML=`
@@ -1025,15 +1414,16 @@ function renderCompare(id){
   const done=sortedPapers().filter(p=>p.status==='done');
   const r=id&&state.reports.find(x=>x.id===id);
   $('#main').innerHTML=`
-  <div class="page-head"><div><h1>Tổng hợp & So sánh</h1><p>AI so sánh lý thuyết, biến, mô hình, thang đo, kết quả; chỉ ra tương đồng, khác biệt, mâu thuẫn và khoảng trống nghiên cứu.</p></div></div>
+  <div class="page-head"><div><h1>Tổng hợp & So sánh</h1><p>So sánh lý thuyết, biến, mô hình, thang đo, kết quả; chỉ ra tương đồng, khác biệt, mâu thuẫn và khoảng trống nghiên cứu.</p></div></div>
   ${tabsHtml('compare')}
   ${r?reportHtml(r):`
   <div class="grid2">
     <div class="card"><h3>Chọn bài báo để so sánh</h3>
       <div class="row" style="margin-bottom:8px"><input type="search" id="cq" placeholder="Lọc…" style="flex:1"><button class="btn xs" data-act="cmpAll" data-v="1">Chọn hết</button><button class="btn xs" data-act="cmpAll" data-v="0">Bỏ chọn</button></div>
       <div class="list" id="clist" style="max-height:420px;overflow:auto">${done.length?done.map(p=>`<label class="li" data-s="${esc((p.file_name+' '+titleOf(p)+' '+fv(p,'author_year')).toLowerCase())}"><input type="checkbox" data-act="selRow" data-id="${p.id}" ${state.selected.has(p.id)?'checked':''}><span class="t">${p.file_no!=null?p.file_no+'. ':''}${esc(titleOf(p))} <span class="muted small">— ${esc(fv(p,'author_year'))}</span></span></label>`).join(''):'<p class="muted">Chưa có bài nào phân tích xong.</p>'}</div>
-      <div class="row" style="margin-top:12px"><button class="btn primary" data-act="runCompare" ${state.comparing?'disabled':''}>${state.comparing?'<span class="spin"></span> Đang tạo báo cáo…':'Tạo báo cáo so sánh'} (<span class="selN">${[...state.selected].filter(id=>getPaper(id)?.status==='done').length}</span> bài)</button></div>
-      <p class="muted small" style="margin-top:8px">Dùng dữ liệu đã chỉnh sửa/xác nhận trong bảng. Nên so sánh tối đa khoảng 60 bài mỗi lần.</p></div>
+      <div class="row" style="margin-top:12px"><button class="btn primary" data-act="runQuick">Tổng hợp nhanh — không AI (<span class="selN">${[...state.selected].filter(id=>getPaper(id)?.status==='done').length}</span> bài)</button>
+        <button class="btn" data-act="runCompare" ${state.comparing?'disabled':''}>${state.comparing?'<span class="spin"></span> Đang tạo…':'So sánh bằng AI'}</button></div>
+      <p class="muted small" style="margin-top:8px"><b>Tổng hợp nhanh</b>: đếm tần suất lý thuyết, biến, phương pháp, bối cảnh, thang đo; chỉ ra điểm chung, điểm ít được nghiên cứu (gợi ý khoảng trống) và các giả thuyết bị bác bỏ — ra kết quả ngay. <b>So sánh bằng AI</b> cần Gemini key. Cả hai dùng dữ liệu đã chỉnh sửa/xác nhận trong bảng.</p></div>
     <div class="card"><h3>Báo cáo đã lưu</h3>${state.reports.length?`<div class="list">${state.reports.map(x=>`<div class="li"><a class="t" href="#/compare/${x.id}">${esc(x.title)}</a><span class="muted small">${fmtDate(x.created_at)}</span></div>`).join('')}</div>`:'<p class="muted">Chưa có báo cáo.</p>'}</div>
   </div>`}`;
   const cq=$('#cq');if(cq) cq.oninput=e=>{const q=e.target.value.toLowerCase();$$('#clist .li').forEach(l=>l.hidden=q&&!l.dataset.s.includes(q))};
@@ -1042,7 +1432,69 @@ function reportHtml(r){
   return `<div class="row" style="margin-bottom:12px"><a class="btn sm" href="#/compare">‹ Danh sách</a><span class="sp"></span><button class="btn sm" data-act="dlReport" data-id="${r.id}">Tải .md</button><button class="btn sm danger" data-act="delReport" data-id="${r.id}">Xóa</button></div>
   <div class="card report"><h2>${esc(r.title)}</h2><p class="muted small">${fmtDate(r.created_at)} · ${r.paper_ids.length} bài · ${esc(r.ai_model||'')}</p>${DOMPurify.sanitize(marked.parse(r.content||''))}</div>`;
 }
+// ---------- Tổng hợp nhanh không dùng AI ----------
+function splitItems(v){
+  if(!v||isNA(v)||/^Từ khóa của bài|^Bài có nhắc|^Câu trong bài|^Không phát hiện/i.test(v)) return [];
+  return String(v).split(/\n|;|•/).map(s=>s.replace(/\(.*?\)/g,'').replace(/^(Quốc gia|Lĩnh vực\/đối tượng|Phân tích|Chọn mẫu|Cỡ mẫu.*?)\s*:\s*/i,'').trim()).filter(s=>s.length>1&&s.length<90);
+}
+function tally(papers,getItems){
+  const m=new Map();
+  papers.forEach((p,i)=>{const seen=new Set();for(const it of getItems(p)){const k=it.toLowerCase();if(seen.has(k))continue;seen.add(k);if(!m.has(k))m.set(k,{name:it,ids:[]});m.get(k).ids.push(i+1)}});
+  return [...m.values()].sort((a,b)=>b.ids.length-a.ids.length||a.name.localeCompare(b.name));
+}
+const dictItems=(dict,text)=>dict.filter(([,re])=>re.test(text)).map(x=>x[0]);
+function mdTable(rows,n,label,limit=25){
+  if(!rows.length) return '_Chưa có dữ liệu._\n';
+  return `| ${label} | Số bài | % | Bài |\n|---|---|---|---|\n`+rows.slice(0,limit).map(r=>`| ${r.name.replace(/\|/g,'/')} | ${r.ids.length} | ${Math.round(r.ids.length/n*100)}% | ${r.ids.map(i=>'['+i+']').join(' ')} |`).join('\n')+(rows.length>limit?`\n\n_…và ${rows.length-limit} mục khác._`:'')+'\n';
+}
+function quickSynthesis(papers){
+  const n=papers.length,L=[];
+  const years=papers.map(p=>parseInt(fv(p,'year'))).filter(y=>y>1900);
+  const theory=tally(papers,p=>splitItems(fv(p,'theory')));
+  const vars={iv:tally(papers,p=>splitItems(fv(p,'iv'))),med:tally(papers,p=>splitItems(fv(p,'med'))),mod:tally(papers,p=>splitItems(fv(p,'mod'))),dv:tally(papers,p=>splitItems(fv(p,'dv')))};
+  const tech=tally(papers,p=>dictItems(ANALYSIS,fv(p,'design')));
+  const appr=tally(papers,p=>dictItems([['Định lượng',/định lượng|quantitative/i],['Định tính',/định tính|qualitative/i],['Hỗn hợp',/hỗn hợp|mixed/i]],fv(p,'design')));
+  const ctry=tally(papers,p=>COUNTRIES.filter(c=>new RegExp('\\b'+c+'\\b','i').test(fv(p,'context'))));
+  const sect=tally(papers,p=>dictItems(SECTORS,fv(p,'context')));
+  const lik=tally(papers,p=>{const m=fv(p,'scales').match(/Likert\s*(\d+)|(\d+)[- ]point/i);return m?['Likert '+(m[1]||m[2])+' điểm']:[]});
+  const samples=papers.map(p=>{const m=fv(p,'design').match(/Cỡ mẫu[^:]*:\s*([\d,; ]+)/i)||fv(p,'design').match(/\b(\d{2,6})\b/);if(!m)return null;const ns=m[1].split(/[;\s]+/).map(x=>parseInt(x.replace(/,/g,''))).filter(Boolean);return ns.length?Math.min(...ns):null}).filter(Boolean);
+  const rank=tally(papers,p=>fv(p,'rank')?[fv(p,'rank')]:[]);
+  L.push(`## 1. Tổng quan tập bài báo\n- Số bài: **${n}**${years.length?` · Năm xuất bản: **${Math.min(...years)}–${Math.max(...years)}**`:''}\n- Xếp hạng tạp chí: ${rank.length?rank.map(r=>`${r.name}: ${r.ids.length}`).join(' · '):'chưa có'}\n- Cách tiếp cận: ${appr.length?appr.map(r=>`${r.name}: ${r.ids.length}`).join(' · '):'chưa xác định'}\n`);
+  if(years.length){const yc={};years.forEach(y=>yc[y]=(yc[y]||0)+1);L.push('| Năm | Số bài |\n|---|---|\n'+Object.keys(yc).sort().map(y=>`| ${y} | ${yc[y]} |`).join('\n')+'\n')}
+  L.push(`## 2. Lý thuyết nền tảng (theoretical foundations)\n`+mdTable(theory,n,'Lý thuyết'));
+  L.push(`## 3. Biến nghiên cứu (research variables)\n### Biến độc lập (independent variables)\n${mdTable(vars.iv,n,'Biến')}\n### Biến trung gian (mediators)\n${mdTable(vars.med,n,'Biến')}\n### Biến điều tiết (moderators)\n${mdTable(vars.mod,n,'Biến')}\n### Biến phụ thuộc (dependent variables)\n${mdTable(vars.dv,n,'Biến')}`);
+  L.push(`## 4. Phương pháp (methods)\n${mdTable(tech,n,'Kỹ thuật phân tích')}${samples.length?`\n- Cỡ mẫu: nhỏ nhất **${Math.min(...samples)}**, lớn nhất **${Math.max(...samples)}**, trung vị **${samples.sort((a,b)=>a-b)[Math.floor(samples.length/2)]}** (từ ${samples.length} bài có số liệu)\n`:''}`);
+  L.push(`## 5. Bối cảnh nghiên cứu (research context)\n### Quốc gia\n${mdTable(ctry,n,'Quốc gia')}\n### Lĩnh vực / đối tượng\n${mdTable(sect,n,'Lĩnh vực')}`);
+  L.push(`## 6. Thang đo (measurement scales)\n${mdTable(lik,n,'Loại thang đo')}`);
+  const common=[['Lý thuyết',theory],['Biến độc lập',vars.iv],['Biến phụ thuộc',vars.dv],['Kỹ thuật',tech],['Quốc gia',ctry]].flatMap(([g,rows])=>rows.filter(r=>n>=2&&r.ids.length>=Math.max(2,Math.ceil(n*0.5))).map(r=>`- **${g}**: ${r.name} — ${r.ids.length}/${n} bài`));
+  L.push(`## 7. Điểm tương đồng (similarities)\n_Các mục xuất hiện ở ≥ 50% số bài._\n${common.length?common.join('\n'):'- Không có mục nào chung cho phần lớn các bài.'}\n`);
+  const rare=[['Lý thuyết',theory],['Biến trung gian',vars.med],['Biến điều tiết',vars.mod],['Quốc gia',ctry],['Kỹ thuật',tech]].flatMap(([g,rows])=>rows.filter(r=>r.ids.length===1).slice(0,8).map(r=>`- **${g}**: ${r.name} — chỉ có ở [${r.ids[0]}]`));
+  L.push(`## 8. Điểm khác biệt (differences)\n_Các mục chỉ xuất hiện ở 1 bài._\n${rare.length?rare.join('\n'):'- Không có.'}\n`);
+  const contra=[];papers.forEach((p,i)=>{const f=fv(p,'findings');const hits=f.split('\n').filter(s=>/not supported|rejected|insignificant|non-significant|not significant|no significant/i.test(s));hits.forEach(h=>contra.push(`- [${i+1}] ${h.replace(/^•\s*/,'').slice(0,300)}`))});
+  L.push(`## 9. Kết quả không ủng hộ / có thể mâu thuẫn (contradictions)\n_Các câu kết quả có “not supported / rejected / not significant” — so sánh với bài khác có cùng mối quan hệ để xác định mâu thuẫn._\n${contra.length?contra.join('\n'):'- Không tìm thấy giả thuyết bị bác bỏ trong dữ liệu.'}\n`);
+  const gaps=[];
+  if(!vars.mod.length) gaps.push('- Chưa bài nào dùng **biến điều tiết (moderator)** → có thể bổ sung trong mô hình luận văn.');
+  else if(vars.mod.length&&vars.mod.every(r=>r.ids.length<=1)) gaps.push('- **Biến điều tiết** được dùng rất ít và không lặp lại giữa các bài.');
+  if(!vars.med.length) gaps.push('- Chưa bài nào dùng **biến trung gian (mediator)**.');
+  if(appr.length&&!appr.some(r=>/Định tính|Hỗn hợp/.test(r.name))) gaps.push('- Chưa có nghiên cứu **định tính / hỗn hợp** → khoảng trống về phương pháp.');
+  if(ctry.length) gaps.push(`- Bối cảnh tập trung ở: ${ctry.slice(0,3).map(r=>r.name+' ('+r.ids.length+')').join(', ')}. ${ctry.some(r=>/Vietnam|Viet Nam/i.test(r.name))?'':'**Chưa có bài nào tại Việt Nam** → khoảng trống bối cảnh.'}`);
+  if(theory.length===1) gaps.push(`- Chỉ dùng một lý thuyết (**${theory[0].name}**) → có thể kết hợp thêm lý thuyết khác.`);
+  const lims=papers.map((p,i)=>[i+1,fv(p,'limitations')]).filter(x=>x[1]&&!isNA(x[1]));
+  if(lims.length) gaps.push(`- Hạn chế do các tác giả tự nêu (gợi ý hướng nghiên cứu): xem mục "Hạn chế nghiên cứu" của các bài ${lims.slice(0,12).map(x=>'['+x[0]+']').join(' ')}.`);
+  L.push(`## 10. Gợi ý khoảng trống nghiên cứu (research gaps)\n_Gợi ý tự động dựa trên tần suất — cần bạn đánh giá lại._\n${gaps.length?gaps.join('\n'):'- Không có gợi ý.'}\n`);
+  return L.join('\n');
+}
+async function runQuick(){
+  const papers=sortedPapers().filter(p=>p.status==='done'&&state.selected.has(p.id));
+  if(papers.length<2) return toast('Hãy chọn ít nhất 2 bài đã phân tích.');
+  let md=quickSynthesis(papers);
+  md+=`\n\n## Danh sách bài báo\n`+papers.map((p,i)=>`[${i+1}] ${fv(p,'author_year')&&!isNA(fv(p,'author_year'))?fv(p,'author_year'):p.file_name} — ${titleOf(p)}`).join('\n\n');
+  const {data:row,error}=await sb.from('reports').insert({title:`Tổng hợp nhanh ${papers.length} bài báo – ${new Date().toLocaleDateString('vi-VN')}`,paper_ids:papers.map(p=>p.id),content:md,ai_model:'Tổng hợp tự động (không AI)'}).select().single();
+  if(error) return toast('Không lưu được báo cáo: '+error.message,'error');
+  state.reports.unshift(row);location.hash='#/compare/'+row.id;
+}
 async function runCompare(){
+  if(!S.geminiKey) return toast('So sánh bằng AI cần Gemini key (Cài đặt). Dùng “Tổng hợp nhanh” để không cần AI.','error');
   const papers=sortedPapers().filter(p=>p.status==='done'&&state.selected.has(p.id));
   if(papers.length<2) return toast('Hãy chọn ít nhất 2 bài đã phân tích.');
   if(papers.length>80&&!await confirmBox('Nhiều bài báo',`Bạn chọn ${papers.length} bài — có thể vượt giới hạn gói miễn phí. Vẫn tiếp tục?`)) return;
@@ -1067,10 +1519,10 @@ function renderExport(){
   const list=scope==='sel'?sel:scope==='full'?full:done;
   const warn=list.map(p=>({p,s:paperStats(p)})).filter(x=>!x.s.full);
   $('#main').innerHTML=`
-  <div class="page-head"><div><h1>Xuất dữ liệu Excel</h1><p>Mỗi bài một dòng; cột theo đúng mẫu (STT + 24 cột).</p></div></div>
+  <div class="page-head"><div><h1>Xuất dữ liệu Excel</h1><p>Mỗi bài một dòng; cột theo đúng mẫu (No + ${FIELDS.length} cột, theo mẫu REVIEW PAPER).</p></div></div>
   <div class="grid2">
     <div class="card"><h3>Phạm vi xuất</h3>
-      ${[['all',`Tất cả bài đã phân tích (${done.length})`],['sel',`Các bài đã chọn trong bảng (${sel.length})`],['full',`Chỉ bài đã xác nhận đủ 24 trường (${full.length})`]].map(([v,l])=>`<label class="opt"><input type="radio" name="exs" value="${v}" ${scope===v?'checked':''}>${l}</label>`).join('')}
+      ${[['all',`Tất cả bài đã phân tích (${done.length})`],['sel',`Các bài đã chọn trong bảng (${sel.length})`],['full',`Chỉ bài đã xác nhận đủ ${FIELDS.length} trường (${full.length})`]].map(([v,l])=>`<label class="opt"><input type="radio" name="exs" value="${v}" ${scope===v?'checked':''}>${l}</label>`).join('')}
       <h3 style="margin-top:14px">Tùy chọn</h3>
       <label class="opt"><input type="checkbox" id="exEv" ${state.exEv!==false?'checked':''}>Thêm sheet “Minh chứng” (số trang + trích dẫn gốc + trạng thái)</label>
       <label class="opt"><input type="checkbox" id="exSum" ${state.exSum!==false?'checked':''}>Thêm sheet “Tóm tắt”</label>
@@ -1078,11 +1530,11 @@ function renderExport(){
     </div>
     <div class="card"><h3>Kiểm tra trước khi xuất</h3>
       ${warn.length?`<div class="callout warn" style="margin-bottom:10px">${warn.length}/${list.length} bài chưa được xác nhận đủ. Bạn vẫn có thể xuất, nhưng nên kiểm tra trước.</div>
-      <div class="list" style="max-height:300px;overflow:auto">${warn.map(x=>`<div class="li"><a class="t" href="#/paper/${x.p.id}">${x.p.file_no!=null?x.p.file_no+'. ':''}${esc(titleOf(x.p))}</a><span class="badge">${x.s.verified}/24 ✓</span>${x.s.issues?`<span class="badge warn">${x.s.issues} ⚠</span>`:''}</div>`).join('')}</div>`
+      <div class="list" style="max-height:300px;overflow:auto">${warn.map(x=>`<div class="li"><a class="t" href="#/paper/${x.p.id}">${x.p.file_no!=null?x.p.file_no+'. ':''}${esc(titleOf(x.p))}</a><span class="badge">${x.s.verified}/${FIELDS.length} ✓</span>${x.s.issues?`<span class="badge warn">${x.s.issues} ⚠</span>`:''}</div>`).join('')}</div>`
       :list.length?'<div class="callout">Tất cả bài trong phạm vi đã được xác nhận đầy đủ.</div>':'<p class="muted">Không có bài nào trong phạm vi này.</p>'}
     </div>
   </div>
-  <div class="card"><h3>Thứ tự cột</h3><ol class="collist"><li>STT</li>${FIELDS.map(f=>`<li>${esc(f.xl||f.label)}</li>`).join('')}</ol></div>`;
+  <div class="card"><h3>Thứ tự cột</h3><ol class="collist"><li>No</li>${FIELDS.map(f=>`<li>${esc((f.xl||f.label).replace(/\n/g,' / '))}</li>`).join('')}</ol></div>`;
   $$('input[name=exs]').forEach(r=>r.onchange=()=>{state.exScope=r.value;renderExport()});
   $('#exEv').onchange=e=>state.exEv=e.target.checked;
   $('#exSum').onchange=e=>state.exSum=e.target.checked;
@@ -1091,20 +1543,35 @@ const XL=s=>{s=String(s??'');return s.length>32000?s.slice(0,32000)+'…':s};
 async function exportExcel(papers,{evidence=true,summary=true}={}){
   const wb=new ExcelJS.Workbook();wb.creator='Trợ lý Tổng quan Tài liệu';wb.created=new Date();
   const head=r=>{r.font={bold:true};r.alignment={vertical:'middle',wrapText:true};r.eachCell(c=>{c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFE8EEFB'}};c.border={bottom:{style:'thin',color:{argb:'FF9AA5B5'}}}})};
-  const ws=wb.addWorksheet('Tổng hợp',{views:[{state:'frozen',xSplit:2,ySplit:1}]});
-  ws.columns=[{header:'STT',key:'stt',width:6},...FIELDS.map(f=>({header:f.xl||f.label,key:f.k,width:Math.min(60,f.w+4)}))];
+  // Bố cục theo mẫu “REVIEW PAPER”: dòng 1 tiêu đề, dòng 2 nhóm cột, dòng 3 tên cột, dữ liệu từ dòng 4
+  const ws=wb.addWorksheet('REVIEW PAPER',{views:[{state:'frozen',xSplit:1,ySplit:3}]});
+  const W={title:16,short_title:17.6,journal:9.4,year:6.7,rank:7.1,author_year:12,publisher:10,design:37,context:28,theory:43.7,iv:19.7,med:18.9,mod:16.7,dv:19.4,ctrl:14.6,model:54.9,findings:58.4,scales:38.4,conclusion:38.3,limitations:26.9,cite_link:22.6,apa:17,doi:19.4,anomalies:36.6,hypotheses:76,rq:40};
+  ws.columns=[{key:'stt',width:4.5},...FIELDS.map(f=>({key:f.k,width:W[f.k]||Math.min(60,f.w+4)}))];
+  const nC=FIELDS.length+1,col=k=>FIELDS.findIndex(f=>f.k===k)+2;
+  const white={argb:'FFFFFFFF'},solid=c=>({type:'pattern',pattern:'solid',fgColor:{argb:c}}),thin={style:'thin',color:{argb:'FFBFBFBF'}},box={top:thin,left:thin,bottom:thin,right:thin};
+  ws.mergeCells(1,1,1,nC);
+  Object.assign(ws.getCell(1,1),{value:`TỔNG HỢP BÀI BÁO (REVIEW PAPER) — ${papers.length} bài — xuất ngày ${new Date().toLocaleDateString('vi-VN')}`,font:{bold:true,size:13,color:{argb:'FFCC0000'}},alignment:{vertical:'middle'}});
+  ws.getRow(1).height=24;
+  ws.mergeCells(2,1,3,1);Object.assign(ws.getCell(2,1),{value:'No',fill:solid('FFCC0000'),font:{bold:true,color:white,size:11},alignment:{horizontal:'center',vertical:'middle',wrapText:true},border:box});
+  const groups=[['title','publisher','Article information','FF666666'],['design','theory','Article context','FFF1C232'],['iv','ctrl','Main effect','FF34A853'],['model','limitations','Results','FF4285F4'],['cite_link','doi','TRÍCH DẪN','FFFF9900'],['anomalies','rq','GHI CHÚ & GIẢ THIẾT','FF7F7F7F']];
+  for(const [a,b,label,c] of groups){const c1=col(a),c2=col(b);if(c1<2||c2<2)continue;if(c2>c1)ws.mergeCells(2,c1,2,c2);
+    Object.assign(ws.getCell(2,c1),{value:label,fill:solid(c),font:{bold:true,color:white,size:11},alignment:{horizontal:'center',vertical:'middle',wrapText:true},border:box})}
+  ws.getRow(2).height=20;
+  FIELDS.forEach((f,i)=>Object.assign(ws.getCell(3,i+2),{value:f.xl||f.label,fill:solid('FFF3F3F3'),font:{bold:true,size:10,color:{argb:'FFCC0000'}},alignment:{horizontal:'center',vertical:'middle',wrapText:true},border:box}));
+  ws.getRow(3).height=34;
   papers.forEach((p,i)=>{
-    const row=ws.addRow({stt:i+1,...Object.fromEntries(FIELDS.map(f=>[f.k,XL(fv(p,f.k))]))});
-    row.alignment={vertical:'top',wrapText:true};
-    for(const k of ['cite_link','doi']){const c=row.getCell(k),v=String(c.value||'');if(/^https?:\/\/\S+$/.test(v)){c.value={text:v,hyperlink:v};c.font={color:{argb:'FF1F5FBF'},underline:true}}}
+    const row=ws.getRow(4+i);
+    row.getCell(1).value=i+1;
+    FIELDS.forEach((f,j)=>{row.getCell(j+2).value=XL(fv(p,f.k))});
+    row.eachCell({includeEmpty:true},(c,n)=>{if(n>nC)return;c.alignment={vertical:'top',wrapText:true,horizontal:n===1?'center':'left'};c.font={size:10};c.border=box;if(i%2===1)c.fill=solid('FFF3F3F3')});
+    for(const k of ['cite_link','doi']){const c=row.getCell(col(k)),v=String(c.value||'');if(/^https?:\/\/\S+$/.test(v)){c.value={text:v,hyperlink:v};c.font={size:10,color:{argb:'FF1F5FBF'},underline:true}}}
   });
-  head(ws.getRow(1));ws.getRow(1).height=32;
-  ws.autoFilter={from:{row:1,column:1},to:{row:1,column:FIELDS.length+1}};
+  ws.autoFilter={from:{row:3,column:1},to:{row:3,column:nC}};
   if(evidence){
     const we=wb.addWorksheet('Minh chứng',{views:[{state:'frozen',ySplit:1}]});
     we.columns=[{header:'STT',key:'stt',width:6},{header:'Bài báo',key:'paper',width:30},{header:'Trường',key:'field',width:24},{header:'Giá trị',key:'value',width:50},{header:'Trang',key:'page',width:8},{header:'Trích dẫn gốc',key:'quote',width:60},{header:'Trạng thái',key:'src',width:14},{header:'Cảnh báo',key:'warn',width:24},{header:'File PDF',key:'file',width:30}];
     papers.forEach((p,i)=>FIELDS.forEach(f=>{const v=p.fields?.[f.k]||{},st=fieldState(v);
-      we.addRow({stt:i+1,paper:titleOf(p),field:f.xl||f.label,value:XL(v.value),page:v.page||'',quote:XL(v.quote),src:st.source==='verified'?'Đã xác nhận':st.source==='edited'?'Đã sửa':'AI',warn:st.issues.map(x=>FLAG_LABEL[x]).join(', '),file:p.file_name}).alignment={vertical:'top',wrapText:true}}));
+      we.addRow({stt:i+1,paper:titleOf(p),field:f.label,value:XL(v.value),page:v.page||'',quote:XL(v.quote),src:SRC_LABEL[st.source]||'AI',warn:st.issues.map(x=>FLAG_LABEL[x]).join(', '),file:p.file_name}).alignment={vertical:'top',wrapText:true}}));
     head(we.getRow(1));we.autoFilter={from:{row:1,column:1},to:{row:1,column:9}};
   }
   if(summary){
@@ -1122,7 +1589,15 @@ async function exportExcel(papers,{evidence=true,summary=true}={}){
 function renderSettings(){
   $('#main').innerHTML=`
   <div class="page-head"><div><h1>Cài đặt</h1><p>Các thiết lập này chỉ lưu trên trình duyệt này.</p></div></div>
+  <div class="card" style="margin-bottom:16px"><div class="form">
+    <h2 style="margin:0">Cách phân tích bài báo</h2>
+    <label class="opt"><input type="radio" name="mode" value="rule" ${S.mode!=='ai'?'checked':''}><span><b>Không dùng AI (khuyên dùng)</b> — nhanh (vài giây/bài), không cần key, không giới hạn lượt. Lấy dữ liệu trực tiếp từ chữ trong PDF; nội dung giữ nguyên tiếng Anh theo bài gốc. Biến nghiên cứu được đoán từ giả thuyết H1, H2… nên cần kiểm tra lại.</span></label>
+    <label class="opt"><input type="radio" name="mode" value="ai" ${S.mode==='ai'?'checked':''}><span><b>Dùng AI (Gemini)</b> — tóm tắt bằng tiếng Việt, xác định biến tốt hơn, nhưng chậm và phụ thuộc giới hạn gói miễn phí.</span></label>
+    <label class="opt"><input type="checkbox" id="gcr" ${S.crossref!==false?'checked':''}><span>Tra <b>Crossref</b> theo DOI (miễn phí, không phải AI) để lấy chính xác tên bài, tác giả, tạp chí, năm, nhà xuất bản và tạo trích dẫn APA. Chỉ gửi mã DOI, không gửi nội dung bài.</span></label>
+    <div class="row"><button class="btn primary" data-act="saveSettings">Lưu cài đặt</button></div>
+  </div></div>
   <div class="card"><div class="form">
+    <h2 style="margin:0">Thiết lập AI (chỉ dùng khi chọn “Dùng AI”)</h2>
     <label>Gemini API key <small>Lấy miễn phí tại <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>. Key chỉ lưu trong trình duyệt này và chỉ gửi tới Google.</small>
       <div class="row"><input type="password" id="gk" value="${esc(S.geminiKey)}" style="flex:1" autocomplete="off"><button class="btn sm" data-act="toggleKey">Hiện</button></div></label>
     <label>Model AI <small>Bấm “Kiểm tra key” để tải danh sách model khả dụng.</small>
@@ -1136,7 +1611,7 @@ function renderSettings(){
 }
 
 // ---------- Đăng nhập / cấu hình ----------
-const APP_VERSION='1.3';
+const APP_VERSION='2.1';
 const sbUrlRaw=()=>S.supabaseUrl||CONFIG.SUPABASE_URL;
 const sbKeyRaw=()=>S.supabaseKey||CONFIG.SUPABASE_ANON_KEY;
 function renderSetup(msg=''){
@@ -1193,7 +1668,7 @@ async function startApp(){
   }
   for(const p of state.papers.filter(p=>p.status==='processing')) await patchPaper(p.id,{status:'queued'}).catch(()=>{});
   renderQueueBox();route();
-  if(S.geminiKey&&state.papers.some(p=>p.status==='queued')) runQueue();
+  if((S.mode!=='ai'||S.geminiKey)&&state.papers.some(p=>p.status==='queued')) runQueue();
 }
 async function boot(){
   try{if(!initSupabase()) return renderSetup()}catch(e){return renderSetup('Cấu hình hiện tại không dùng được: '+e.message)}
@@ -1238,7 +1713,7 @@ const ACT={
     if(w) w.location=data.signedUrl;else location.href=data.signedUrl;
   },
   verifyField:a=>{const p=getPaper(a.dataset.id),k=a.dataset.k,v=p.fields?.[k];setField(p,k,{source:v?.source==='verified'?'edited':'verified'});updateFieldCard(p,k)},
-  verifyAll:async a=>{const p=getPaper(a.dataset.id);if(!await confirmBox('Xác nhận tất cả?','Đánh dấu cả 24 trường của bài này là <b>đã kiểm tra và xác nhận</b>.'))return;
+  verifyAll:async a=>{const p=getPaper(a.dataset.id);if(!await confirmBox('Xác nhận tất cả?','Đánh dấu tất cả các trường của bài này là <b>đã kiểm tra và xác nhận</b>.'))return;
     const f={...(p.fields||{})};FIELDS.forEach(x=>f[x.k]={value:'',page:'',quote:'',flag:'',...(f[x.k]||{}),source:'verified'});p.fields=f;await saveFields(p);renderPaper(p.id);toast('Đã xác nhận tất cả.','ok')},
   fieldFilter:a=>{state.fieldFilter=a.dataset.f;$$('.chips .chip').forEach(c=>c.classList.toggle('on',c===a));applyFieldFilter()},
   gotoField:a=>{const p=getPaper(curRoute().id),v=p?.fields?.[a.dataset.k];if(v)gotoPdf(pageList(v.page)[0]||1,v.quote)},
@@ -1251,18 +1726,18 @@ const ACT={
   toggleCols:()=>{const p=$('#colpop');p.hidden=!p.hidden},
   colToggle:a=>{a.checked?state.hidden.delete(a.dataset.k):state.hidden.add(a.dataset.k);store.set('lr.hidden',[...state.hidden]);renderTableBody()},
   compareSel:()=>{location.hash='#/compare'},
-  runCompare,
+  runCompare,runQuick,
   dlReport:a=>{const r=state.reports.find(x=>x.id===a.dataset.id);const b=new Blob(['# '+r.title+'\n\n'+r.content],{type:'text/markdown;charset=utf-8'});const l=document.createElement('a');l.href=URL.createObjectURL(b);l.download='bao_cao_so_sanh.md';l.click()},
   delReport:async a=>{if(!await confirmBox('Xóa báo cáo?','Báo cáo sẽ bị xóa vĩnh viễn.','Xóa','danger'))return;const {error}=await sb.from('reports').delete().eq('id',a.dataset.id);if(error)return toast(error.message,'error');state.reports=state.reports.filter(x=>x.id!==a.dataset.id);location.hash='#/compare'},
   doExport:async a=>{
     const done=sortedPapers().filter(p=>p.status==='done');const sc=state.exScope||'all';
     const list=sc==='sel'?done.filter(p=>state.selected.has(p.id)):sc==='full'?done.filter(p=>paperStats(p).full):done;
     const unv=list.filter(p=>!paperStats(p).full).length;
-    if(unv&&!await confirmBox('Còn dữ liệu chưa xác nhận',`${unv} bài chưa được xác nhận đủ 24 trường. Vẫn xuất Excel?`,'Vẫn xuất'))return;
+    if(unv&&!await confirmBox('Còn dữ liệu chưa xác nhận',`${unv} bài chưa được xác nhận đủ ${FIELDS.length} trường. Vẫn xuất Excel?`,'Vẫn xuất'))return;
     a.disabled=true;try{await exportExcel(list,{evidence:state.exEv!==false,summary:state.exSum!==false});toast('Đã xuất file Excel.','ok')}catch(e){toast('Lỗi xuất Excel: '+e.message,'error')}finally{a.disabled=false}
   },
   toggleKey:a=>{const i=$('#gk');i.type=i.type==='password'?'text':'password';a.textContent=i.type==='password'?'Hiện':'Ẩn'},
-  saveSettings:()=>{S.geminiKey=$('#gk').value.trim();S.model=$('#gm').value.trim()||CONFIG.DEFAULT_MODEL;S.delaySec=Math.max(0,+$('#gd').value||0);saveSettings();toast('Đã lưu cài đặt.','ok');
+  saveSettings:()=>{S.mode=$('input[name=mode]:checked')?.value||'rule';S.crossref=$('#gcr').checked;S.geminiKey=$('#gk').value.trim();S.model=$('#gm').value.trim()||CONFIG.DEFAULT_MODEL;S.delaySec=Math.max(0,+$('#gd').value||0);saveSettings();toast('Đã lưu cài đặt.','ok');
     if(state.papers.some(p=>p.status==='queued')){Q.paused=false;Q.pauseReason='';runQueue()}},
   checkKey:async a=>{
     const key=$('#gk').value.trim();if(!key)return toast('Nhập key trước.');a.disabled=true;
