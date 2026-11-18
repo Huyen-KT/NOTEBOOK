@@ -85,6 +85,25 @@ input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0
 .bar>span{display:block;height:100%;background:var(--primary);border-radius:99px;transition:width .3s}
 .qcur{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .qnote{color:var(--warn)}
+.folders{display:flex;flex-direction:column;gap:4px;font-size:13px;min-height:0}
+.fhead2{display:flex;justify-content:space-between;align-items:center;padding:0 6px;font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--faint)}
+.fhead2 .link{text-transform:none;letter-spacing:0;font-weight:500}
+.ftree{display:flex;flex-direction:column;gap:1px;max-height:42vh;overflow:auto}
+.frow{display:flex;align-items:center;gap:4px;padding:5px 6px;border-radius:7px;cursor:pointer;color:var(--muted);border:1px dashed transparent}
+.frow:hover{background:var(--surface-2);color:var(--text)}
+.frow.on{background:var(--primary-soft);color:var(--primary);font-weight:600}
+.frow.sub{padding-left:22px;font-size:12.5px}
+.frow.over{border-color:var(--primary);background:var(--primary-soft)}
+body.dragging .frow[data-drop]{border-color:var(--border-strong)}
+.frow .caret{width:16px;flex:none;border:0;background:none;color:inherit;cursor:pointer;padding:0;font-size:11px;text-align:center}
+.frow .fn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.frow .cnt{font-size:11.5px;color:var(--faint);font-variant-numeric:tabular-nums}
+.frow .fm{border:0;background:none;color:var(--faint);cursor:pointer;padding:0 4px;border-radius:4px;opacity:0}
+.frow:hover .fm,.frow.on .fm{opacity:1}
+.fsel{display:none}
+.fhint{padding:0 6px;font-size:11.5px}
+.fchips{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px}
+tr[draggable=true]{cursor:grab}
 .side .user{margin-top:auto;font-size:12.5px;color:var(--muted);padding:0 6px;word-break:break-all}
 main{padding:26px 30px 60px;min-width:0}
 .page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:18px}
@@ -204,6 +223,9 @@ td.c:hover .vbtn,.vbtn.on{opacity:1}.vbtn.on{color:var(--ok)}
   .nav a{white-space:nowrap;padding:6px 10px;font-size:13px}
   .nav a .ic{display:none}
   .qbox{padding:8px 10px;gap:5px}
+  .ftree,.fhint{display:none}
+  .fsel{display:block;width:100%}
+  .fhead2{padding:0}
   .side .user{display:none}
   main{padding:16px 16px 60px}
   .collist{columns:1}
@@ -335,7 +357,9 @@ function paperStats(p){
 }
 const fv=(p,k)=>p.fields?.[k]?.value||'';
 const titleOf=p=>{const t=fv(p,'short_title');return t&&!isNA(t)?t:(!isNA(fv(p,'title'))&&fv(p,'title'))||p.file_name};
-const sortedPapers=()=>[...state.papers].sort((a,b)=>((a.file_no??1e9)-(b.file_no??1e9))||a.file_name.localeCompare(b.file_name,'vi',{numeric:true}));
+const byFile=(a,b)=>((a.file_no??1e9)-(b.file_no??1e9))||a.file_name.localeCompare(b.file_name,'vi',{numeric:true});
+const allSorted=()=>[...state.papers].sort(byFile);
+const sortedPapers=()=>[...scopePapers()].sort(byFile);   // chỉ bài trong thư mục đang chọn
 const getPaper=id=>state.papers.find(p=>p.id===id);
 const statusBadge=p=>{const[s,c]=STATUS[p.status]||[p.status,''];return `<span class="badge ${c}">${p.status==='processing'?'<span class="spin"></span>':''}${s}</span>`};
 const SRC_LABEL={verified:'Đã xác nhận',edited:'Đã sửa',auto:'Tự động',ai:'AI'};
@@ -356,6 +380,7 @@ const state={
   uf:{q:'',status:''},
   fieldFilter:'all',
   lastPaper:store.get('lr.last',null),
+  folders:[],links:[],folder:store.get('lr.folder',null),foldOpen:new Set(store.get('lr.foldOpen',[])),foldersMissing:false,
   editing:false,
   comparing:false,
 };
@@ -378,6 +403,181 @@ function initSupabase(){
     console.warn('Supabase URL không đúng dạng https://<project>.supabase.co:',url);
   sb=supabase.createClient(url,key);return true;
 }
+// =====================================================================
+//  THƯ MỤC NGHIÊN CỨU
+// =====================================================================
+const folderById=id=>state.folders.find(f=>f.id===id);
+const byName=(a,b)=>a.name.localeCompare(b.name,'vi',{numeric:true});
+const topFolders=()=>state.folders.filter(f=>!f.parent_id).sort(byName);
+const subFolders=id=>state.folders.filter(f=>f.parent_id===id).sort(byName);
+const folderScopeIds=id=>[id,...subFolders(id).map(f=>f.id)];
+function papersInFolder(id){const ids=new Set(folderScopeIds(id));const pids=new Set(state.links.filter(l=>ids.has(l.folder_id)).map(l=>l.paper_id));return state.papers.filter(p=>pids.has(p.id))}
+function scopePapers(){return state.folder&&folderById(state.folder)?papersInFolder(state.folder):state.papers}
+const folderPath=id=>{const f=folderById(id);if(!f)return '';const par=f.parent_id&&folderById(f.parent_id);return par?`${par.name} › ${f.name}`:f.name};
+const scopeName=()=>state.folder&&folderById(state.folder)?folderPath(state.folder):'Tất cả bài báo';
+const scopeTag=()=>`<span class="badge info" title="Thư mục đang chọn">📁 ${esc(scopeName())}</span>`;
+function setFolder(id,rerender=true){state.folder=id||null;store.set('lr.folder',state.folder);if(rerender){renderFolders();route()}}
+const papersFolders=pid=>state.links.filter(l=>l.paper_id===pid).map(l=>l.folder_id).filter(folderById);
+
+async function linkPaper(pid,fid,auto=false){
+  const ex=state.links.find(l=>l.paper_id===pid&&l.folder_id===fid);
+  if(ex){if(ex.auto!==auto&&!auto){ex.auto=false;await sb.from('paper_folders').update({auto:false}).eq('paper_id',pid).eq('folder_id',fid)}return}
+  const {error}=await sb.from('paper_folders').upsert({paper_id:pid,folder_id:fid,auto},{onConflict:'paper_id,folder_id'});
+  if(error) throw error;
+  state.links.push({paper_id:pid,folder_id:fid,auto});
+}
+async function unlinkPaper(pid,fid){
+  const {error}=await sb.from('paper_folders').delete().eq('paper_id',pid).eq('folder_id',fid);
+  if(error) throw error;
+  state.links=state.links.filter(l=>!(l.paper_id===pid&&l.folder_id===fid));
+}
+async function createFolder(name,parent_id=null,auto_key=null){
+  name=String(name||'').trim().slice(0,120);if(!name) return null;
+  const {data,error}=await sb.from('folders').insert({name,parent_id,auto_key}).select().single();
+  if(error){toast('Không tạo được thư mục: '+error.message,'error');return null}
+  state.folders.push(data);if(parent_id){state.foldOpen.add(parent_id);store.set('lr.foldOpen',[...state.foldOpen])}
+  return data;
+}
+async function deleteFolder(id){
+  const f=folderById(id);if(!f) return;
+  const subs=subFolders(id),n=papersInFolder(id).length;
+  if(!await confirmBox('Xóa thư mục?',`Xóa thư mục <b>${esc(f.name)}</b>${subs.length?` và ${subs.length} thư mục con`:''}. <b>${n} bài báo bên trong vẫn được giữ</b> (vẫn có trong “Tất cả bài báo” và các thư mục khác).`,'Xóa thư mục','danger')) return;
+  const {error}=await sb.from('folders').delete().eq('id',id);
+  if(error) return toast('Không xóa được: '+error.message,'error');
+  const gone=new Set([id,...subs.map(x=>x.id)]);
+  state.folders=state.folders.filter(x=>!gone.has(x.id));state.links=state.links.filter(l=>!gone.has(l.folder_id));
+  if(gone.has(state.folder)) setFolder(f.parent_id||null,false);
+  toast('Đã xóa thư mục.','ok');renderFolders();route();
+}
+async function renameFolder(id){
+  const f=folderById(id);if(!f) return;
+  const name=await promptBox('Đổi tên thư mục','Tên mới',f.name);if(!name||name===f.name) return;
+  const {error}=await sb.from('folders').update({name}).eq('id',id);
+  if(error) return toast('Không đổi được tên: '+error.message,'error');
+  f.name=name;renderFolders();route();
+}
+
+// ---- Tự phân loại theo chủ đề / biến phụ thuộc ----
+const TOPICS=[
+ ['Tránh thuế (Tax avoidance)',/tax avoid|tax aggressiv|effective tax rate|\bc?ETR\b|book[- ]tax differen|\bBTD\b|tax shelter|tránh thuế/i],
+ ['Trốn thuế (Tax evasion)',/tax evasion|trốn thuế/i],
+ ['Tuân thủ thuế (Tax compliance)',/tax compliance|compliance intention|tax morale|tuân thủ thuế/i],
+ ['Rủi ro thuế (Tax risk)',/tax risk|rủi ro thuế/i],
+ ['Hoạch định thuế (Tax planning)',/tax planning|hoạch định thuế/i],
+ ['Quản trị lợi nhuận (Earnings management)',/earnings management|discretionary accruals|real activit(y|ies) manipulation|quản trị lợi nhuận/i],
+ ['Chất lượng kiểm toán (Audit quality)',/audit quality|audit fees?|going[- ]concern opinion|chất lượng kiểm toán/i],
+ ['Chất lượng BCTC (Financial reporting quality)',/financial reporting quality|accounting quality|restatement|chất lượng báo cáo tài chính/i],
+ ['Gian lận (Fraud)',/\bfraud|gian lận/i],
+ ['Hiệu quả & giá trị DN (Firm performance)',/firm performance|financial performance|\bROA\b|\bROE\b|Tobin'?s ?Q|firm value|hiệu quả (hoạt động|tài chính)|giá trị doanh nghiệp/i],
+ ['Lợi suất cổ phiếu (Stock returns)',/stock returns?|share returns?|stock price crash|lợi suất cổ phiếu/i],
+ ['Công bố thông tin / CSR / ESG',/disclosure|\bCSR\b|corporate social responsibility|\bESG\b|sustainability report|integrated report|công bố thông tin|trách nhiệm xã hội/i],
+ ['Chi phí vốn & chính sách tài chính',/cost of (equity|capital|debt)|dividend|cash holdings?|capital structure|investment efficiency|chi phí vốn|cổ tức/i],
+ ['Kiểm soát nội bộ (Internal control)',/internal control|kiểm soát nội bộ/i],
+ ['Ý định & chấp nhận công nghệ',/intention to (use|adopt)|technology adoption|acceptance|continuance intention|ý định sử dụng/i],
+ ['Hành vi người tiêu dùng',/purchase intention|customer satisfaction|loyalty|consumer behavio|ý định mua|sự hài lòng|lòng trung thành/i],
+ ['Hành vi nhân viên & tổ chức',/job performance|turnover intention|job satisfaction|organizational commitment|work engagement|kết quả công việc|ý định nghỉ việc/i],
+ ['Đổi mới (Innovation)',/\binnovation|R&D|đổi mới/i],
+];
+function topicOf(p){
+  const dv=fv(p,'dv'),ti=fv(p,'title'),kw=(String(p.summary||'').match(/Từ khóa:(.*)$/m)||[])[1]||'',su=String(p.summary||'');
+  let best=null;
+  TOPICS.forEach(([label,re],i)=>{const sc=countRe(isNA(dv)?'':dv,re)*5+countRe(ti,re)*3+countRe(kw,re)*2+Math.min(3,countRe(su,re));if(sc>0&&(!best||sc>best.sc))best={label,key:label,sc}});
+  if(best) return best;
+  const d=isNA(dv)?'':String(dv).replace(/^Từ khóa của bài:\s*/i,'').split(/;|\n/)[0].replace(/\(.*?\)/g,'').trim();
+  if(d&&d.length>2){const lab=cap(d.split(/\s+/).slice(0,6).join(' '));return {label:lab,key:'dv:'+lab.toLowerCase()}}
+  return {label:'Khác (chưa xác định chủ đề)',key:'other'};
+}
+// Xếp bài vào thư mục con theo chủ đề, trong từng thư mục hướng nghiên cứu chứa bài.
+// Bỏ qua nếu bạn đã tự xếp bài vào một thư mục con của hướng đó.
+async function autoClassify(p,force=false){
+  if(!p||p.status!=='done'||state.foldersMissing) return 0;
+  const topic=topicOf(p);let moved=0;
+  for(const top of topFolders()){
+    const subs=subFolders(top.id),subIds=new Set(subs.map(x=>x.id));
+    const mine=state.links.filter(l=>l.paper_id===p.id&&(l.folder_id===top.id||subIds.has(l.folder_id)));
+    if(!mine.length) continue;
+    if(!force&&mine.some(l=>subIds.has(l.folder_id)&&!l.auto)) continue;
+    let sub=subs.find(x=>x.auto_key===topic.key)||subs.find(x=>x.name.toLowerCase()===topic.label.toLowerCase());
+    if(!sub) sub=await createFolder(topic.label,top.id,topic.key);
+    if(!sub) continue;
+    if(!mine.some(l=>l.folder_id===sub.id)) {await linkPaper(p.id,sub.id,true);moved++}
+    for(const l of mine) if(l.folder_id!==sub.id) await unlinkPaper(p.id,l.folder_id);
+  }
+  return moved;
+}
+// Chuyển / sao chép nhiều bài vào thư mục đích
+async function placePapers(ids,target,mode){
+  if(!ids.length||!folderById(target)) return;
+  let n=0;
+  try{
+    for(const id of ids){
+      if(mode==='move'&&state.folder){
+        const from=state.folder?folderScopeIds(state.folder):state.links.filter(l=>l.paper_id===id).map(l=>l.folder_id);
+        for(const fid of from) if(fid!==target&&state.links.some(l=>l.paper_id===id&&l.folder_id===fid)) await unlinkPaper(id,fid);
+      }
+      await linkPaper(id,target,false);
+      if(!folderById(target).parent_id) await autoClassify(getPaper(id));
+      n++;
+    }
+  }catch(e){toast('Lỗi khi xếp thư mục: '+e.message,'error')}
+  toast(`Đã ${mode==='move'?'chuyển':'sao chép'} ${n} bài vào “${folderPath(target)}”.`,'ok');
+  renderFolders();route();
+}
+async function removeFromScope(ids){
+  if(!state.folder) return toast('Hãy chọn một thư mục trước.');
+  if(!await confirmBox('Gỡ khỏi thư mục?',`Gỡ ${ids.length} bài khỏi “${esc(scopeName())}”. Bài vẫn còn trong “Tất cả bài báo”.`,'Gỡ')) return;
+  for(const id of ids) for(const fid of folderScopeIds(state.folder)) if(state.links.some(l=>l.paper_id===id&&l.folder_id===fid)) await unlinkPaper(id,fid).catch(e=>toast(e.message,'error'));
+  toast(`Đã gỡ ${ids.length} bài.`,'ok');renderFolders();route();
+}
+function folderPicker(title,okLabel){
+  return new Promise(res=>{
+    const root=$('#modal');
+    const tree=topFolders().map(t=>`<label class="opt"><input type="radio" name="fp" value="${t.id}"><b>${esc(t.name)}</b></label>`+subFolders(t.id).map(c=>`<label class="opt" style="padding-left:24px"><input type="radio" name="fp" value="${c.id}">${esc(c.name)}</label>`).join('')).join('');
+    root.innerHTML=`<div class="modal-bg"><div class="modal"><h2>${esc(title)}</h2>
+      <div style="max-height:320px;overflow:auto">${tree||'<p class="muted">Chưa có thư mục nào.</p>'}</div>
+      <label class="opt"><input type="radio" name="fp" value="__new" ${tree?'':'checked'}>Thư mục mới: <input type="text" id="fpNew" placeholder="Tên hướng nghiên cứu" style="flex:1"></label>
+      <p class="muted small">Chọn thư mục hướng nghiên cứu → hệ thống tự xếp vào thư mục con theo chủ đề. Chọn thư mục con → bài được giữ cố định ở đó.</p>
+      <div class="row"><button class="btn" data-x="0">Hủy</button><button class="btn primary" data-x="1">${esc(okLabel)}</button></div></div></div>`;
+    $('#fpNew').addEventListener('focus',()=>{root.querySelector('input[value=__new]').checked=true});
+    root.querySelector('.modal-bg').addEventListener('click',async e=>{
+      const b=e.target.closest('button[data-x]');if(!b&&!e.target.classList.contains('modal-bg'))return;
+      if(!b||b.dataset.x==='0'){root.innerHTML='';return res(null)}
+      const v=root.querySelector('input[name=fp]:checked')?.value;
+      if(!v) return toast('Chọn một thư mục.');
+      if(v==='__new'){const name=$('#fpNew').value.trim();if(!name)return toast('Nhập tên thư mục mới.');root.innerHTML='';const f=await createFolder(name);return res(f?.id||null)}
+      root.innerHTML='';res(v);
+    });
+  });
+}
+function promptBox(title,label,value=''){
+  return new Promise(res=>{
+    const root=$('#modal');
+    root.innerHTML=`<div class="modal-bg"><form class="modal"><h2>${esc(title)}</h2><label style="display:flex;flex-direction:column;gap:6px">${esc(label)}<input type="text" id="pbIn" value="${esc(value)}" maxlength="120"></label>
+      <div class="row"><button class="btn" type="button" data-x="0">Hủy</button><button class="btn primary" type="submit">Lưu</button></div></form></div>`;
+    const inp=$('#pbIn');inp.focus();inp.select();
+    root.querySelector('form').onsubmit=e=>{e.preventDefault();const v=inp.value.trim();root.innerHTML='';res(v||null)};
+    root.querySelector('.modal-bg').addEventListener('click',e=>{if(e.target.dataset.x==='0'||e.target.classList.contains('modal-bg')){root.innerHTML='';res(null)}});
+  });
+}
+function renderFolders(){
+  const el=$('#fbox');if(!el) return;
+  if(state.foldersMissing){el.innerHTML=`<div class="fhead2">Thư mục nghiên cứu</div><div class="callout small" style="margin:0">Chạy file <b>folders.sql</b> trong Supabase SQL Editor để bật tính năng thư mục, rồi tải lại trang.</div>`;return}
+  const row=(f,sub)=>{const n=papersInFolder(f.id).length,kids=sub?[]:subFolders(f.id),open=state.foldOpen.has(f.id);
+    return `<div class="frow ${state.folder===f.id?'on':''} ${sub?'sub':''}" data-act="pickFolder" data-id="${f.id}" data-drop="${f.id}" title="${esc(folderPath(f.id))}">
+      ${sub?'<span class="caret"></span>':`<button class="caret" data-act="toggleFold" data-id="${f.id}" aria-label="Mở/đóng">${kids.length?(open?'▾':'▸'):''}</button>`}
+      <span class="fn">${f.auto_key&&sub?'':''}${esc(f.name)}</span><span class="cnt">${n}</span>
+      <button class="fm" data-act="folderMenu" data-id="${f.id}" title="Tùy chọn">⋯</button></div>
+      ${!sub&&open?kids.map(k=>row(k,true)).join(''):''}`};
+  el.innerHTML=`<div class="fhead2"><span>Thư mục nghiên cứu</span><button class="link" data-act="newFolder">+ Thư mục</button></div>
+    <div class="ftree">
+      <div class="frow ${!state.folder?'on':''}" data-act="pickFolder" data-id=""><span class="caret"></span><span class="fn">Tất cả bài báo</span><span class="cnt">${state.papers.length}</span></div>
+      ${topFolders().map(f=>row(f,false)).join('')}
+    </div>
+    <select class="fsel" data-act-change="folderSel" aria-label="Chọn thư mục"><option value="">Tất cả bài báo (${state.papers.length})</option>${topFolders().map(t=>`<option value="${t.id}" ${state.folder===t.id?'selected':''}>${esc(t.name)} (${papersInFolder(t.id).length})</option>`+subFolders(t.id).map(c=>`<option value="${c.id}" ${state.folder===c.id?'selected':''}>   └ ${esc(c.name)} (${papersInFolder(c.id).length})</option>`).join('')).join('')}</select>
+    <div class="muted small fhint">Kéo bài thả vào thư mục để chuyển; giữ Ctrl để sao chép.</div>`;
+}
+function selectedInView(){const vis=curRoute().page==='table'?tableVisible():uploadVisible();return vis.filter(p=>state.selected.has(p.id)).map(p=>p.id)}
+
 async function loadData(){
   const [a,b]=await Promise.all([
     sb.from('papers').select('*').order('created_at',{ascending:true}).limit(5000),
@@ -385,9 +585,23 @@ async function loadData(){
   ]);
   if(a.error) throw a.error;if(b.error) throw b.error;
   state.papers=a.data||[];state.reports=b.data||[];saveSel();
+  let f,l;
+  try{[f,l]=await Promise.all([sb.from('folders').select('*').order('created_at',{ascending:true}),sb.from('paper_folders').select('*').limit(20000)])}
+  catch(e){f={error:e};l={error:e}}
+  if(f.error||l.error){state.foldersMissing=true;state.folders=[];state.links=[];console.warn('folders',f.error||l.error)}
+  else{state.foldersMissing=false;state.folders=f.data||[];state.links=l.data||[]}
+  if(state.folder&&!folderById(state.folder)) setFolder(null,false);
+}
+// Bỏ ký tự ẩn mà Postgres không lưu được (\u0000, ký tự điều khiển, surrogate lẻ) — hay gặp trong PDF
+const cleanStr=t=>t.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F\uFFFE\uFFFF]/g,'').replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g,'');
+function cleanDeep(v){
+  if(typeof v==='string') return cleanStr(v);
+  if(Array.isArray(v)) return v.map(cleanDeep);
+  if(v&&typeof v==='object'){const o={};for(const [k,x] of Object.entries(v)) o[k]=cleanDeep(x);return o}
+  return v;
 }
 async function patchPaper(id,patch){
-  const {data,error}=await sb.from('papers').update(patch).eq('id',id).select().maybeSingle();
+  const {data,error}=await sb.from('papers').update(cleanDeep(patch)).eq('id',id).select().maybeSingle();
   if(error) throw error;
   const i=state.papers.findIndex(p=>p.id===id);
   if(data&&i>=0) state.papers[i]=data;
@@ -396,7 +610,7 @@ async function patchPaper(id,patch){
 const saveChains={};
 function saveFields(p){
   saveChains[p.id]=(saveChains[p.id]||Promise.resolve()).then(async()=>{
-    const {error}=await sb.from('papers').update({fields:p.fields}).eq('id',p.id);
+    const {error}=await sb.from('papers').update({fields:cleanDeep(p.fields)}).eq('id',p.id);
     if(error) toast('Lỗi lưu: '+error.message,'error');
   });
   return saveChains[p.id];
@@ -418,7 +632,7 @@ async function extractPages(buf){
   const out=[];
   for(let i=1;i<=doc.numPages;i++){
     const tc=await (await doc.getPage(i)).getTextContent();
-    out.push(tc.items.map(it=>it.str+(it.hasEOL?'\n':' ')).join(''));
+    out.push(cleanStr(tc.items.map(it=>it.str+(it.hasEOL?'\n':' ')).join('')));
   }
   await doc.destroy();return out;
 }
@@ -686,8 +900,8 @@ async function extractDocFull(buf){
   const pages=[];let p1=[];
   for(let i=1;i<=doc.numPages;i++){
     const tc=await (await doc.getPage(i)).getTextContent();
-    pages.push(tc.items.map(it=>it.str+(it.hasEOL?'\n':' ')).join('').replace(/[ \t]+/g,' '));
-    if(i===1) p1=tc.items.map(it=>({s:it.str,h:Math.hypot(it.transform[2],it.transform[3])}));
+    pages.push(cleanStr(tc.items.map(it=>it.str+(it.hasEOL?'\n':' ')).join('')).replace(/[ \t]+/g,' '));
+    if(i===1) p1=tc.items.map(it=>({s:cleanStr(it.str),h:Math.hypot(it.transform[2],it.transform[3])}));
   }
   await doc.destroy();return {pages,p1};
 }
@@ -1027,7 +1241,7 @@ async function runQueue(){
   Q.running=true;Q.paused=false;Q.pauseReason='';clearTimeout(Q.resumeTimer);renderQueueBox();
   try{
     while(!Q.paused){
-      const next=sortedPapers().find(p=>p.status==='queued');
+      const next=allSorted().find(p=>p.status==='queued');
       if(!next) break;
       await processPaper(next);
       if(!Q.paused&&state.papers.some(p=>p.status==='queued')) await sleep(S.mode==='ai'?Math.max(0,S.delaySec)*1000:50);
@@ -1043,6 +1257,7 @@ async function processPaper(p){
     const r=await analyzePaper(getPaper(p.id)||p);
     if(!getPaper(p.id)) return;
     await patchPaper(p.id,{status:'done',fields:r.fields,summary:r.summary,page_count:r.page_count,ai_model:S.mode==='ai'?aiLabel():'Tự động (không AI)',analyzed_at:new Date().toISOString(),error:null,overwrite_all:false});
+    try{if(await autoClassify(getPaper(p.id)))renderFolders()}catch(e){console.warn('autoClassify',e)}
   }catch(e){
     console.error(e);
     try{
@@ -1074,11 +1289,12 @@ function renderShell(){
       <a href="#/export" data-r="export">${icon('excel')}Xuất Excel</a>
       <a href="#/settings" data-r="settings">${icon('gear')}Cài đặt</a>
     </nav>
+    <div class="folders" id="fbox"></div>
     <div class="qbox" id="qbox"></div>
     <div class="user">${esc(user?.email||'')}<br><button class="link" data-act="logout">Đăng xuất</button></div>
   </aside>
   <main id="main"></main></div>`;
-  renderQueueBox();
+  renderQueueBox();renderFolders();
 }
 function counts(){const c={total:state.papers.length,queued:0,processing:0,done:0,failed:0};state.papers.forEach(p=>c[p.status]++);return c}
 function renderQueueBox(){
@@ -1117,20 +1333,20 @@ function route(){
 
 // ---------- Tổng quan ----------
 function renderDashboard(){
-  const c=counts(),st=state.papers.map(p=>({p,s:paperStats(p)}));
+  const scope=scopePapers();const c={total:scope.length,queued:0,processing:0,done:0,failed:0};scope.forEach(p=>c[p.status]++);const st=scope.map(p=>({p,s:paperStats(p)}));
   const done=st.filter(x=>x.p.status==='done');
   const issueFields=done.reduce((a,x)=>a+x.s.issues,0),full=done.filter(x=>x.s.full).length;
   const attention=done.filter(x=>x.s.issues>0).sort((a,b)=>b.s.issues-a.s.issues).slice(0,8);
-  const failed=state.papers.filter(p=>p.status==='failed');
-  const ranks=['Q1','Q2','Q3','Q4'].map(q=>[q,state.papers.filter(p=>fv(p,'rank')===q).length]);
+  const failed=scope.filter(p=>p.status==='failed');
+  const ranks=['Q1','Q2','Q3','Q4'].map(q=>[q,scope.filter(p=>fv(p,'rank')===q).length]);
   const maxR=Math.max(1,...ranks.map(r=>r[1]));
   $('#main').innerHTML=`
-  <div class="page-head"><div><h1>Tổng quan</h1><p>Theo dõi tiến trình phân tích và chất lượng dữ liệu.</p></div>
+  <div class="page-head"><div><h1>Tổng quan</h1><p>${scopeTag()} Theo dõi tiến trình phân tích và chất lượng dữ liệu.</p></div>
     <a class="btn primary" href="#/upload">${icon('upload')}Tải lên bài báo</a></div>
   ${S.mode==='ai'&&!aiKey()?`<div class="callout warn">Đang ở chế độ <b>Dùng AI</b> nhưng chưa có ${PROVIDER_NAME[S.provider]} API key. <a href="#/settings">Vào Cài đặt</a> để nhập key, hoặc chuyển sang chế độ Không dùng AI.</div>`:''}
   ${Q.running?`<div class="callout">Đang phân tích hàng đợi. <b>Hãy giữ tab này mở</b> cho đến khi xong; đóng tab thì hàng đợi tạm dừng và chạy tiếp ở lần mở sau.</div>`:''}
   <div class="stats">
-    <div class="stat"><b>${c.total}</b><span>Tổng số bài báo</span></div>
+    <div class="stat"><b>${c.total}</b><span>Tổng số bài báo${state.folder?' trong thư mục':''}</span></div>
     <div class="stat"><b style="color:var(--ok)">${c.done}</b><span>Đã phân tích</span></div>
     <div class="stat"><b style="color:var(--primary)">${c.queued+c.processing}</b><span>Đang chờ / xử lý</span></div>
     <div class="stat"><b style="color:${c.failed?'var(--danger)':'inherit'}">${c.failed}</b><span>Xử lý lỗi</span></div>
@@ -1151,7 +1367,7 @@ function renderDashboard(){
 function renderUpload(id){
   if(id==='failed') state.uf.status='failed';
   $('#main').innerHTML=`
-  <div class="page-head"><div><h1>Tải lên & Quản lý PDF</h1><p>Đặt tên file dạng <b>“5. Q2. Tên bài.pdf”</b> để tự nhận số thứ tự và xếp hạng tạp chí.</p></div></div>
+  <div class="page-head"><div><h1>Tải lên & Quản lý PDF</h1><p>${scopeTag()} ${state.folder?'File tải lên sẽ vào thư mục này. ':''}Đặt tên file dạng <b>“5. Q2. Tên bài.pdf”</b> để tự nhận số thứ tự và xếp hạng tạp chí.</p></div></div>
   <label class="drop" id="drop"><input type="file" id="fileIn" accept=".pdf,application/pdf" multiple hidden>
     <b>Kéo thả file PDF vào đây hoặc bấm để chọn</b><span class="muted">Chọn được nhiều file cùng lúc (100+). Tối đa 50MB/file.</span></label>
   <div id="upProg"></div>
@@ -1163,6 +1379,9 @@ function renderUpload(id){
     <button class="btn sm" data-act="bulkReanalyze">Phân tích lại</button>
     <button class="btn sm danger" data-act="bulkDelete">Xóa</button>
     <button class="btn sm" data-act="retryFailed">Thử lại file lỗi</button>
+    <button class="btn sm" data-act="bulkMove">Chuyển thư mục</button>
+    <button class="btn sm" data-act="bulkCopy">Sao chép vào thư mục</button>
+    ${state.folder?'<button class="btn sm" data-act="bulkUnlink">Gỡ khỏi thư mục</button>':''}
   </div>
   <div class="tw" id="uList"></div>`;
   const drop=$('#drop'),fi=$('#fileIn');
@@ -1185,10 +1404,10 @@ function renderUploadList(){
   $('#uSelInfo').textContent=sel?`Đã chọn ${sel}`:'';
   if(!list.length){el.innerHTML=`<div class="empty">${state.papers.length?'Không có bài phù hợp bộ lọc.':'Chưa có bài báo nào. Hãy tải file PDF lên.'}</div>`;return}
   el.innerHTML=`<table><thead><tr><th style="width:34px"><input type="checkbox" data-act="selAll" data-scope="upload" ${sel===list.length?'checked':''}></th><th>STT</th><th>Tên file</th><th>Xếp hạng</th><th>Trạng thái</th><th>Kiểm tra</th><th>Cập nhật</th><th></th></tr></thead><tbody>
-  ${list.map(p=>{const s=paperStats(p);return `<tr>
+  ${list.map(p=>{const s=paperStats(p);const fs=papersFolders(p.id);return `<tr draggable="true" data-drag="${p.id}">
     <td><input type="checkbox" data-act="selRow" data-id="${p.id}" ${state.selected.has(p.id)?'checked':''}></td>
     <td class="nowrap">${p.file_no??'–'}</td>
-    <td><div class="fname" title="${esc(p.file_name)}"><a href="#/paper/${p.id}">${esc(p.file_name)}</a></div>${p.status==='failed'?`<div class="err">${esc(p.error||'')}</div>`:''}</td>
+    <td><div class="fname" title="${esc(p.file_name)}"><a href="#/paper/${p.id}">${esc(p.file_name)}</a></div>${p.status==='failed'?`<div class="err">${esc(p.error||'')}</div>`:''}${fs.length?`<div class="fchips">${fs.map(f=>`<span class="badge">📁 ${esc(folderPath(f))}</span>`).join('')}</div>`:''}</td>
     <td>${esc(fv(p,'rank'))||'<span class="badge warn">?</span>'}</td>
     <td class="nowrap">${statusBadge(p)}</td>
     <td class="nowrap">${p.status==='done'?`<span class="badge ${s.full?'ok':''}">${s.verified}/${FIELDS.length} ✓</span> ${s.issues?`<span class="badge warn">${s.issues} ⚠</span>`:''}`:''}</td>
@@ -1228,12 +1447,14 @@ async function uploadFiles(fileList){
         const {data,error}=await sb.from('papers').insert({id,file_name:f.name,file_no:no,storage_path:path,file_size:f.size,fields}).select().single();
         if(error){await sb.storage.from(CONFIG.BUCKET).remove([path]);throw error}
         state.papers.push(data);
+        if(state.folder&&folderById(state.folder)) await linkPaper(data.id,state.folder,false).catch(e=>console.warn(e));
       }catch(e){fails.push(`${f.name}: ${e.message||e}`)}
       done++;show();renderUploadList();renderQueueBox();
     }
   };
   await Promise.all([worker(),worker(),worker()]);
-  toast(`Đã tải lên ${todo.length-fails.length}/${todo.length} file.`,fails.length?'error':'ok');
+  renderFolders();
+  toast(`Đã tải lên ${todo.length-fails.length}/${todo.length} file${state.folder?` vào “${scopeName()}”`:''}.`,fails.length?'error':'ok');
   if(!fails.length) setTimeout(()=>{const el=prog();if(el&&!el.querySelector('.err'))el.innerHTML=''},4000);
   runQueue();
 }
@@ -1248,9 +1469,9 @@ async function deletePapers(ids){
     if(r1.error){toast(`Không xóa được file ${p.file_name}: ${r1.error.message}`,'error');continue}
     const r2=await sb.from('papers').delete().eq('id',id);
     if(r2.error){toast(`Không xóa được dữ liệu ${p.file_name}: ${r2.error.message}`,'error');continue}
-    state.papers=state.papers.filter(x=>x.id!==id);state.selected.delete(id);pdfCache.delete(id);ok++;
+    state.papers=state.papers.filter(x=>x.id!==id);state.links=state.links.filter(l=>l.paper_id!==id);state.selected.delete(id);pdfCache.delete(id);ok++;
   }
-  saveSel();toast(`Đã xóa ${ok} bài.`,'ok');refresh();return true;
+  saveSel();renderFolders();toast(`Đã xóa ${ok} bài.`,'ok');refresh();return true;
 }
 async function reanalyzePapers(ids){
   ids=ids.filter(id=>getPaper(id)&&getPaper(id).status!=='processing');
@@ -1273,6 +1494,7 @@ function renderPaper(id){
   if(!id){$('#main').innerHTML=`<div class="empty">Chưa có bài báo nào. <a href="#/upload">Tải lên ngay</a>.</div>`;return}
   if(curRoute().id!==id){history.replaceState(null,'','#/paper/'+id)}
   const p=getPaper(id);state.lastPaper=id;store.set('lr.last',id);
+  if(!list.includes(p)) list.splice(0,list.length,...allSorted());
   const i=list.indexOf(p),prev=list[i-1],next=list[i+1];
   $('#main').innerHTML=`
   <div class="dnav">
@@ -1290,6 +1512,7 @@ function renderPaper(id){
       <button class="btn sm ok" data-act="verifyAll" data-id="${p.id}" ${p.status==='processing'?'disabled':''}>Xác nhận tất cả</button>
       <button class="btn sm danger" data-act="deleteOne" data-id="${p.id}">Xóa</button>
     </div></div>
+  <div class="fchips" id="dfolders" style="margin:-8px 0 14px"></div>
   <div id="dstatus"></div>
   <div class="detail">
     <section>
@@ -1303,7 +1526,7 @@ function renderPaper(id){
     </div></section>
   </div>`;
   $('#pick').onchange=e=>location.hash='#/paper/'+e.target.value;
-  refreshDetailStatus();applyFieldFilter();autosizeAll();
+  renderDetailFolders(p);refreshDetailStatus();applyFieldFilter();autosizeAll();
   openViewer(p);
 }
 function fieldCard(p,f,n){
@@ -1327,6 +1550,10 @@ function updateFieldCard(p,k){
 }
 function applyFieldFilter(){
   $$('#flist .fcard').forEach(c=>{const f=state.fieldFilter;c.hidden=f==='warn'?c.dataset.warn!=='1':f==='unverified'?c.dataset.ver==='1':false});
+}
+function renderDetailFolders(p){
+  const el=$('#dfolders');if(!el||state.foldersMissing) return;
+  el.innerHTML=papersFolders(p.id).map(f=>`<span class="badge">📁 ${esc(folderPath(f))} <button class="link" data-act="unlinkOne" data-id="${p.id}" data-f="${f}" title="Gỡ khỏi thư mục" style="margin-left:4px">×</button></span>`).join('')+` <button class="btn xs" data-act="addOneFolder" data-id="${p.id}">+ Thêm vào thư mục</button>`;
 }
 function refreshDetailStatus(){
   const p=getPaper(curRoute().id);if(!p) return;
@@ -1401,7 +1628,7 @@ function tabsHtml(on){return `<div class="tabs"><a href="#/table" class="${on===
 function renderTable(){
   const cols=FIELDS;
   $('#main').innerHTML=`
-  <div class="page-head"><div><h1>Tổng hợp & So sánh</h1><p>Mỗi dòng là một bài báo. Bấm vào ô để sửa trực tiếp; bấm ✓ để xác nhận ô đó.</p></div></div>
+  <div class="page-head"><div><h1>Tổng hợp & So sánh</h1><p>${scopeTag()} Mỗi dòng là một bài báo. Bấm vào ô để sửa trực tiếp; bấm ✓ để xác nhận ô đó.</p></div></div>
   ${tabsHtml('table')}
   <div class="toolbar" style="margin-top:0">
     <input type="search" id="tq" placeholder="Tìm trong mọi cột…" value="${esc(state.tf.q)}">
@@ -1412,6 +1639,8 @@ function renderTable(){
     <span class="sp"></span>
     <div class="colmenu"><button class="btn sm" data-act="toggleCols">Cột ▾</button><div class="pop" id="colpop" hidden>
       ${cols.map(f=>`<label><input type="checkbox" data-act="colToggle" data-k="${f.k}" ${state.hidden.has(f.k)?'':'checked'}>${esc(f.label)}</label>`).join('')}</div></div>
+    <button class="btn sm" data-act="bulkMove">Chuyển thư mục</button>
+    <button class="btn sm" data-act="bulkCopy">Sao chép</button>
     <button class="btn sm" data-act="compareSel">So sánh AI (<span class="selN">0</span>)</button>
     <a class="btn sm primary" href="#/export">Xuất Excel</a>
   </div>
@@ -1452,7 +1681,7 @@ function renderTableBody(){
   el.innerHTML=`<table><thead><tr><th class="stk" style="width:36px"><input type="checkbox" data-act="selAll" data-scope="table" ${allSel?'checked':''}></th><th class="stk2">STT</th>
     ${cols.map(f=>`<th class="sortable" data-act="sortCol" data-k="${f.k}" style="min-width:${f.w*7.5}px">${esc(f.label)} <span class="arr">${state.sort.k===f.k?(state.sort.dir>0?'▲':'▼'):'↕'}</span></th>`).join('')}</tr></thead>
   <tbody>${list.map(p=>`<tr><td class="stk"><input type="checkbox" data-act="selRow" data-id="${p.id}" ${state.selected.has(p.id)?'checked':''}></td>
-    <td class="stk2 nowrap"><a href="#/paper/${p.id}" title="${esc(p.file_name)}">${p.file_no??'–'}</a>${p.status!=='done'?`<div>${statusBadge(p)}</div>`:''}</td>
+    <td class="stk2 nowrap" draggable="true" data-drag="${p.id}" title="Kéo vào thư mục ở thanh bên" style="cursor:grab"><a href="#/paper/${p.id}" title="${esc(p.file_name)}">${p.file_no??'–'}</a>${p.status!=='done'?`<div>${statusBadge(p)}</div>`:''}</td>
     ${cols.map(f=>`<td class="c ${cellCls(p,f.k)}" data-act="editCell" data-id="${p.id}" data-k="${f.k}">${cellInner(p,f.k)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
   el.scrollTop=st;el.scrollLeft=sl;
 }
@@ -1492,7 +1721,7 @@ function renderCompare(id){
   const done=sortedPapers().filter(p=>p.status==='done');
   const r=id&&state.reports.find(x=>x.id===id);
   $('#main').innerHTML=`
-  <div class="page-head"><div><h1>Tổng hợp & So sánh</h1><p>So sánh lý thuyết, biến, mô hình, thang đo, kết quả; chỉ ra tương đồng, khác biệt, mâu thuẫn và khoảng trống nghiên cứu.</p></div></div>
+  <div class="page-head"><div><h1>Tổng hợp & So sánh</h1><p>${scopeTag()} So sánh lý thuyết, biến, mô hình, thang đo, kết quả; chỉ ra tương đồng, khác biệt, mâu thuẫn và khoảng trống nghiên cứu.</p></div></div>
   ${tabsHtml('compare')}
   ${r?reportHtml(r):`
   <div class="grid2">
@@ -1567,7 +1796,7 @@ async function runQuick(){
   if(papers.length<2) return toast('Hãy chọn ít nhất 2 bài đã phân tích.');
   let md=quickSynthesis(papers);
   md+=`\n\n## Danh sách bài báo\n`+papers.map((p,i)=>`[${i+1}] ${fv(p,'author_year')&&!isNA(fv(p,'author_year'))?fv(p,'author_year'):p.file_name} — ${titleOf(p)}`).join('\n\n');
-  const {data:row,error}=await sb.from('reports').insert({title:`Tổng hợp nhanh ${papers.length} bài báo – ${new Date().toLocaleDateString('vi-VN')}`,paper_ids:papers.map(p=>p.id),content:md,ai_model:'Tổng hợp tự động (không AI)'}).select().single();
+  const {data:row,error}=await sb.from('reports').insert(cleanDeep({title:`Tổng hợp nhanh ${papers.length} bài báo – ${new Date().toLocaleDateString('vi-VN')}`,paper_ids:papers.map(p=>p.id),content:md,ai_model:'Tổng hợp tự động (không AI)'})).select().single();
   if(error) return toast('Không lưu được báo cáo: '+error.message,'error');
   state.reports.unshift(row);location.hash='#/compare/'+row.id;
 }
@@ -1582,7 +1811,7 @@ async function runCompare(){
     let md=await callAI({system:SYS_COMPARE,text:data});
     md=md.replace(/^```(?:markdown|md)?\s*/i,'').replace(/```\s*$/,'').trim();
     md+=`\n\n## Danh sách bài báo\n`+papers.map((p,i)=>`[${i+1}] ${fv(p,'author_year')||''} — ${fv(p,'title')||p.file_name}`).join('\n\n');
-    const {data:row,error}=await sb.from('reports').insert({title:`So sánh ${papers.length} bài báo – ${new Date().toLocaleDateString('vi-VN')}`,paper_ids:papers.map(p=>p.id),content:md,ai_model:aiLabel()}).select().single();
+    const {data:row,error}=await sb.from('reports').insert(cleanDeep({title:`So sánh ${papers.length} bài báo – ${new Date().toLocaleDateString('vi-VN')}`,paper_ids:papers.map(p=>p.id),content:md,ai_model:aiLabel()})).select().single();
     if(error) throw error;
     state.reports.unshift(row);state.comparing=false;location.hash='#/compare/'+row.id;
   }catch(e){state.comparing=false;toast('Không tạo được báo cáo: '+e.message,'error');if(curRoute().page==='compare')renderCompare()}
@@ -1597,7 +1826,7 @@ function renderExport(){
   const list=scope==='sel'?sel:scope==='full'?full:done;
   const warn=list.map(p=>({p,s:paperStats(p)})).filter(x=>!x.s.full);
   $('#main').innerHTML=`
-  <div class="page-head"><div><h1>Xuất dữ liệu Excel</h1><p>Mỗi bài một dòng; cột theo đúng mẫu (No + ${FIELDS.length} cột, theo mẫu REVIEW PAPER).</p></div></div>
+  <div class="page-head"><div><h1>Xuất dữ liệu Excel</h1><p>${scopeTag()} Mỗi bài một dòng; cột theo đúng mẫu (No + ${FIELDS.length} cột, theo mẫu REVIEW PAPER).</p></div></div>
   <div class="grid2">
     <div class="card"><h3>Phạm vi xuất</h3>
       ${[['all',`Tất cả bài đã phân tích (${done.length})`],['sel',`Các bài đã chọn trong bảng (${sel.length})`],['full',`Chỉ bài đã xác nhận đủ ${FIELDS.length} trường (${full.length})`]].map(([v,l])=>`<label class="opt"><input type="radio" name="exs" value="${v}" ${scope===v?'checked':''}>${l}</label>`).join('')}
@@ -1660,7 +1889,7 @@ async function exportExcel(papers,{evidence=true,summary=true}={}){
   }
   const buf=await wb.xlsx.writeBuffer();
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
-  a.download=`Tong_hop_bai_bao_${new Date().toISOString().slice(0,10)}.xlsx`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+  a.download=`Tong_hop_${state.folder?scopeName().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,60):'bai_bao'}_${new Date().toISOString().slice(0,10)}.xlsx`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);
 }
 
 // ---------- Cài đặt ----------
@@ -1700,7 +1929,7 @@ function renderSettings(){
 }
 
 // ---------- Đăng nhập / cấu hình ----------
-const APP_VERSION='2.2';
+const APP_VERSION='3.0';
 const sbUrlRaw=()=>S.supabaseUrl||CONFIG.SUPABASE_URL;
 const sbKeyRaw=()=>S.supabaseKey||CONFIG.SUPABASE_ANON_KEY;
 function renderSetup(msg=''){
@@ -1816,6 +2045,23 @@ const ACT={
   colToggle:a=>{a.checked?state.hidden.delete(a.dataset.k):state.hidden.add(a.dataset.k);store.set('lr.hidden',[...state.hidden]);renderTableBody()},
   compareSel:()=>{location.hash='#/compare'},
   runCompare,runQuick,
+  pickFolder:a=>{const id=a.dataset.id||null;if(state.folder===id)return;setFolder(id)},
+  toggleFold:a=>{const id=a.dataset.id;state.foldOpen.has(id)?state.foldOpen.delete(id):state.foldOpen.add(id);store.set('lr.foldOpen',[...state.foldOpen]);renderFolders()},
+  newFolder:async()=>{const name=await promptBox('Thư mục nghiên cứu mới','Tên hướng nghiên cứu (vd. “UBKT và tránh thuế”)');if(!name)return;const f=await createFolder(name);if(f){toast('Đã tạo thư mục. Tải bài lên hoặc kéo bài vào thư mục này.','ok');setFolder(f.id)}},
+  folderMenu:async a=>{
+    const f=folderById(a.dataset.id);if(!f)return;const top=!f.parent_id;
+    const v=await modal({title:folderPath(f.id),body:top?'Thư mục hướng nghiên cứu. Bài thêm vào đây sẽ được tự xếp vào thư mục con theo chủ đề / biến phụ thuộc.':'Thư mục con'+(f.auto_key?' (hệ thống tạo theo chủ đề)':'')+'. Bài bạn tự chuyển vào đây sẽ được giữ cố định.',
+      buttons:[{label:'Đóng',value:null},{label:'Xóa',value:'del',kind:'danger'},...(top?[{label:'Tự phân loại lại',value:'auto'},{label:'+ Thư mục con',value:'sub'}]:[]),{label:'Đổi tên',value:'ren',kind:'primary'}]});
+    if(v==='ren') renameFolder(f.id);
+    else if(v==='del') deleteFolder(f.id);
+    else if(v==='sub'){const name=await promptBox('Thư mục con mới',`Trong “${f.name}”`);if(name){await createFolder(name,f.id);renderFolders()}}
+    else if(v==='auto'){let n=0;for(const p of papersInFolder(f.id)) n+=await autoClassify(p).catch(()=>0);toast(n?`Đã xếp ${n} bài vào thư mục con.`:'Không có bài nào cần xếp lại (bài bạn tự xếp được giữ nguyên).','ok');renderFolders();route()}
+  },
+  bulkMove:async()=>{const ids=selectedInView();if(!ids.length)return toast('Chưa chọn bài nào.');const t=await folderPicker(`Chuyển ${ids.length} bài đến thư mục`,'Chuyển');if(t)placePapers(ids,t,'move')},
+  bulkCopy:async()=>{const ids=selectedInView();if(!ids.length)return toast('Chưa chọn bài nào.');const t=await folderPicker(`Sao chép ${ids.length} bài vào thư mục`,'Sao chép');if(t)placePapers(ids,t,'copy')},
+  bulkUnlink:()=>{const ids=selectedInView();if(!ids.length)return toast('Chưa chọn bài nào.');removeFromScope(ids)},
+  unlinkOne:async a=>{await unlinkPaper(a.dataset.id,a.dataset.f).catch(e=>toast(e.message,'error'));renderFolders();renderDetailFolders(getPaper(a.dataset.id))},
+  addOneFolder:async a=>{const t=await folderPicker('Thêm bài vào thư mục','Thêm');if(t){await placePapers([a.dataset.id],t,'copy')}},
   dlReport:a=>{const r=state.reports.find(x=>x.id===a.dataset.id);const b=new Blob(['# '+r.title+'\n\n'+r.content],{type:'text/markdown;charset=utf-8'});const l=document.createElement('a');l.href=URL.createObjectURL(b);l.download='bao_cao_so_sanh.md';l.click()},
   delReport:async a=>{if(!await confirmBox('Xóa báo cáo?','Báo cáo sẽ bị xóa vĩnh viễn.','Xóa','danger'))return;const {error}=await sb.from('reports').delete().eq('id',a.dataset.id);if(error)return toast(error.message,'error');state.reports=state.reports.filter(x=>x.id!==a.dataset.id);location.hash='#/compare'},
   doExport:async a=>{
@@ -1861,7 +2107,9 @@ document.addEventListener('click',e=>{
   const fn=ACT[a.dataset.act];if(fn) fn(a,e);
 });
 document.addEventListener('change',e=>{
-  const t=e.target;if(!t.dataset.input) return;
+  const t=e.target;
+  if(t.dataset.actChange==='folderSel'){setFolder(t.value||null);return}
+  if(!t.dataset.input) return;
   const p=getPaper(t.dataset.id),k=t.dataset.k,key=t.dataset.input;if(!p) return;
   const val=t.value.trim(),cur=p.fields?.[k]||{};
   if((cur[key]||'')===val) return;
@@ -1872,6 +2120,21 @@ document.addEventListener('change',e=>{
 });
 document.addEventListener('input',e=>{if(e.target.matches('textarea.fval,textarea.fquote'))autosize(e.target)});
 window.addEventListener('hashchange',()=>{if(user)route()});
+document.addEventListener('dragstart',e=>{
+  const r=e.target.closest?.('[data-drag]');if(!r) return;
+  const id=r.dataset.drag;const ids=state.selected.has(id)?selectedInView():[id];
+  e.dataTransfer.setData('text/plain',JSON.stringify(ids));e.dataTransfer.effectAllowed='copyMove';
+  document.body.classList.add('dragging');
+});
+const clearOver=except=>$$('.frow.over').forEach(x=>{if(x!==except)x.classList.toggle('over',false)});
+document.addEventListener('dragend',()=>{document.body.classList.toggle('dragging',false);clearOver(null)});
+document.addEventListener('dragover',e=>{const d=e.target.closest?.('[data-drop]');if(!d)return;e.preventDefault();e.dataTransfer.dropEffect=(e.ctrlKey||e.metaKey||e.altKey)?'copy':'move';clearOver(d);d.classList.add('over')});
+document.addEventListener('dragleave',e=>{const d=e.target.closest?.('[data-drop]');if(d&&!d.contains(e.relatedTarget))d.classList.toggle('over',false)});
+document.addEventListener('drop',e=>{
+  const d=e.target.closest?.('[data-drop]');if(!d) return;e.preventDefault();d.classList.toggle('over',false);
+  let ids=[];try{ids=JSON.parse(e.dataTransfer.getData('text/plain')||'[]')}catch{}
+  ids=ids.filter(getPaper);if(ids.length) placePapers(ids,d.dataset.drop,(e.ctrlKey||e.metaKey||e.altKey)?'copy':'move');
+});
 window.addEventListener('beforeunload',e=>{if(Q.running){e.preventDefault();e.returnValue=''}});
 boot().catch(e=>{app.innerHTML=`<div class="auth"><div class="auth-card"><h1>Lỗi khởi động</h1><p>${esc(e.message)}</p></div></div>`});
 </script>
